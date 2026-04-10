@@ -5,11 +5,10 @@ All notable changes to the Mini DB project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.1.0-milestone-1] - 2026-04-10
+## [0.1.0-milestone-2] - 2026-04-10
 ### Added
-- Project scaffold with CMake.
-- GoogleTest integration via `FetchContent`.
-- Directory structure: `src/`, `tests/`.
-- Basic REPL entry point in `src/repl/main.cpp`.
-- Sample unit test in `tests/sample_test.cpp`.
-- Initialized Git repository and tagged version `v0.1.0-milestone-1`.
+- `Status` class for unified error handling in `src/common/status.h`.
+- `Page` class representing a 4KB data block.
+- `Pager` class for file-backed storage (read/write/allocate).
+- Unit tests for Pager (persistence, allocation, I/O) in `tests/storage_test.cpp`.
+- Integrated `minidb_storage` library into CMake.
