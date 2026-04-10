@@ -3,6 +3,7 @@ add_executable(unit_tests
     sample_test.cpp
     storage_test.cpp
     record_test.cpp
+    table_test.cpp
 )
 
 target_link_libraries(unit_tests

@@ -1,6 +1,7 @@
 add_library(minidb_storage
     pager.cpp
     record.cpp
+    table_heap.cpp
 )
 
 target_link_libraries(minidb_storage
