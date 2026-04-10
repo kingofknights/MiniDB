@@ -3,40 +3,30 @@
 
 namespace minidb {
 
-/**
- * Simple page layout for v1:
- * [0-3]: num_records (uint32_t)
- * [4...]: raw serialized records
- */
-struct PageHeader {
-    uint32_t num_records;
-};
-
 Status TableHeap::InsertRecord(const Record& record) {
     auto serialized = Record::Serialize(schema_, record);
-    if (serialized.size() + sizeof(PageHeader) > PAGE_SIZE) {
-        return Status::IOError("Record too large to fit in a single page");
-    }
+    uint32_t record_size = static_cast<uint32_t>(serialized.size());
     
-    // Find a page with enough space or allocate a new one
+    if (record_size + sizeof(Slot) + sizeof(SlottedPageHeader) > PAGE_SIZE) {
+        return Status::IOError("Record too large for a single page");
+    }
+
     PageID target_page_id = INVALID_PAGE_ID;
     Page page;
     
     for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
         pager_.ReadPage(i, page);
-        PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
+        auto* header = page.GetHeader();
         
-        // Calculate used space (v1: very simple scan)
-        size_t used_space = sizeof(PageHeader);
-        size_t bytes_read = 0;
-        uint8_t* ptr = page.GetData() + sizeof(PageHeader);
-        for (uint32_t r = 0; r < header->num_records; ++r) {
-            Record::Deserialize(schema_, ptr, bytes_read);
-            used_space += bytes_read;
-            ptr += bytes_read;
+        if (header->magic != SLOTTED_PAGE_MAGIC) {
+            page.InitializeHeader();
+            header = page.GetHeader();
         }
+        
+        uint32_t slot_dir_end = sizeof(SlottedPageHeader) + (header->num_slots * sizeof(Slot));
+        uint32_t free_space = header->free_space_offset - slot_dir_end;
 
-        if (used_space + serialized.size() <= PAGE_SIZE) {
+        if (free_space >= record_size + sizeof(Slot)) {
             target_page_id = i;
             break;
         }
@@ -45,21 +35,19 @@ Status TableHeap::InsertRecord(const Record& record) {
     if (target_page_id == INVALID_PAGE_ID) {
         target_page_id = pager_.AllocatePage();
         pager_.ReadPage(target_page_id, page);
-        PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
-        header->num_records = 0;
+        page.InitializeHeader();
     }
 
-    // Append to the end of the page
-    PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
-    uint8_t* ptr = page.GetData() + sizeof(PageHeader);
-    size_t bytes_read = 0;
-    for (uint32_t r = 0; r < header->num_records; ++r) {
-        Record::Deserialize(schema_, ptr, bytes_read);
-        ptr += bytes_read;
-    }
+    auto* header = page.GetHeader();
+    uint32_t slot_id = header->num_slots++;
+    header->free_space_offset -= record_size;
+    
+    Slot* slot = page.GetSlot(slot_id);
+    slot->offset = header->free_space_offset;
+    slot->length = record_size;
+    slot->deleted = false;
 
-    std::memcpy(ptr, serialized.data(), serialized.size());
-    header->num_records++;
+    std::memcpy(page.GetData() + slot->offset, serialized.data(), record_size);
     
     return pager_.WritePage(page);
 }
@@ -70,16 +58,16 @@ std::vector<Record> TableHeap::Scan() {
     
     for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
         pager_.ReadPage(i, page);
-        PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
-        uint8_t* ptr = page.GetData() + sizeof(PageHeader);
+        auto* header = page.GetHeader();
         
-        for (uint32_t r = 0; r < header->num_records; ++r) {
-            size_t bytes_read = 0;
-            Record rec = Record::Deserialize(schema_, ptr, bytes_read);
-            if (!rec.IsDeleted()) {
-                records.push_back(std::move(rec));
+        if (header->magic != SLOTTED_PAGE_MAGIC) continue;
+
+        for (uint32_t s = 0; s < header->num_slots; ++s) {
+            Slot* slot = page.GetSlot(s);
+            if (!slot->deleted) {
+                size_t bytes_read = 0;
+                records.push_back(Record::Deserialize(schema_, page.GetData() + slot->offset, bytes_read));
             }
-            ptr += bytes_read;
         }
     }
     

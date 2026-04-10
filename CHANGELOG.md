@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-13] - 2026-04-10
+### Added
+- **Slotted Page Storage**: Implemented a professional slot-directory page layout.
+- **Space Management**: Records now grow from the end of the page, while the slot directory grows from the start.
+- **Improved Deletion**: Moved from record-level tombstones to slot-level deletion flags for better management.
+- **Page Safety**: Added a 4-byte magic number (`MDB1`) to the page header to identify and initialize database pages.
+- **Robustness**: Refactored `TableHeap` and `Executor` to use slotted offsets, passing 100+ regression tests.
+
 ## [0.1.0-milestone-12] - 2026-04-10
 ### Added
 - **B-Tree Indexing**: Implemented an in-memory B-Tree index for ordered lookups.

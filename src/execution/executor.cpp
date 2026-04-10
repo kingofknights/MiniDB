@@ -229,20 +229,20 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
     Page page;
     for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
         pager_.ReadPage(i, page);
-        struct PageHeader { uint32_t num_records; };
-        PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
-        uint8_t* ptr = page.GetData() + sizeof(PageHeader);
+        auto* header = page.GetHeader();
         bool page_modified = false;
 
-        for (uint32_t r = 0; r < header->num_records; ++r) {
-            size_t bytes_read = 0;
-            Record rec = Record::Deserialize(schema, ptr, bytes_read);
-            if (!rec.IsDeleted() && Matches(rec, schema, stmt.where.get())) {
-                *ptr = 1; // Mark tombstone
-                page_modified = true;
-                deleted_count++;
+        for (uint32_t s = 0; s < header->num_slots; ++s) {
+            Slot* slot = page.GetSlot(s);
+            if (!slot->deleted) {
+                size_t bytes_read = 0;
+                Record rec = Record::Deserialize(schema, page.GetData() + slot->offset, bytes_read);
+                if (Matches(rec, schema, stmt.where.get())) {
+                    slot->deleted = true;
+                    page_modified = true;
+                    deleted_count++;
+                }
             }
-            ptr += bytes_read;
         }
 
         if (page_modified) {
