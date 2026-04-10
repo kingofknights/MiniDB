@@ -4,6 +4,7 @@ add_executable(unit_tests
     storage_test.cpp
     record_test.cpp
     table_test.cpp
+    parser_test.cpp
 )
 
 target_link_libraries(unit_tests
@@ -11,7 +12,7 @@ target_link_libraries(unit_tests
     minidb_common
     minidb_storage
     minidb_catalog
-    # minidb_parser
+    minidb_parser
     # minidb_execution
 )
 
