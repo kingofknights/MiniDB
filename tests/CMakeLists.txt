@@ -5,6 +5,7 @@ add_executable(unit_tests
     record_test.cpp
     table_test.cpp
     parser_test.cpp
+    integration_test.cpp
 )
 
 target_link_libraries(unit_tests
@@ -13,7 +14,7 @@ target_link_libraries(unit_tests
     minidb_storage
     minidb_catalog
     minidb_parser
-    # minidb_execution
+    minidb_execution
 )
 
 include(GoogleTest)
