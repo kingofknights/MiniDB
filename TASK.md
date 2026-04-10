@@ -98,6 +98,12 @@ Do not implement unless specifically requested:
 - allow interactive statements
 - add example usage in README
 
+### Milestone 8: Catalog Persistence & Advanced SQL
+- Persist catalog/schema metadata in Page 0.
+- Execute `DELETE` statements (tombstone markers).
+- Support `WHERE <col> = <value>` for SELECT and DELETE.
+- Integration tests for cross-restart schema availability.
+
 ## Deliverable expectations
 For each milestone:
 - code

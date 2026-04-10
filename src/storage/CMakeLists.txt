@@ -5,7 +5,7 @@ add_library(minidb_storage
 )
 
 target_link_libraries(minidb_storage
-    PUBLIC minidb_common
+    PUBLIC minidb_common minidb_catalog
 )
 
 target_include_directories(minidb_storage PUBLIC ${CMAKE_SOURCE_DIR})

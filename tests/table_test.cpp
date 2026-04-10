@@ -21,6 +21,7 @@ protected:
 TEST_F(TableHeapTest, InsertAndScan) {
     Status status = Status::OK();
     auto pager = Pager::Open(test_db_, status);
+    pager->AllocatePage(); // Catalog page
     Schema schema({
         {"id", DataType::INT},
         {"name", DataType::TEXT}
@@ -42,6 +43,7 @@ TEST_F(TableHeapTest, InsertAndScan) {
 TEST_F(TableHeapTest, MultiPageInsert) {
     Status status = Status::OK();
     auto pager = Pager::Open(test_db_, status);
+    pager->AllocatePage(); // Catalog page
     
     // Schema with a large text field to force multi-page usage
     Schema schema({{"id", DataType::INT}, {"data", DataType::TEXT}});

@@ -29,8 +29,18 @@ int main(int argc, char* argv[]) {
         return 1;
     }
 
-    Catalog catalog;
-    Executor executor(catalog, *pager);
+    std::unique_ptr<Catalog> catalog;
+    if (pager->GetPageCount() == 0) {
+        catalog = std::make_unique<Catalog>();
+        // Allocate Page 0 for Catalog
+        pager->AllocatePage();
+    } else {
+        Page page0;
+        pager->ReadPage(0, page0);
+        catalog = Catalog::Deserialize(page0.GetData());
+    }
+
+    Executor executor(*catalog, *pager);
 
     std::cout << "Welcome to MiniDB!" << std::endl;
     std::cout << "Connected to: " << db_file << std::endl;

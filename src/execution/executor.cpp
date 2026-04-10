@@ -1,5 +1,6 @@
 #include "src/execution/executor.h"
 #include <iomanip>
+#include <cstring>
 
 namespace minidb {
 
@@ -21,6 +22,20 @@ Status Executor::ExecuteCreate(const CreateTableStatement& stmt) {
         return Status::IOError("Table already exists: " + stmt.table_name);
     }
     catalog_.CreateTable(stmt.table_name, Schema(stmt.columns));
+    
+    // Save Catalog to Page 0
+    std::vector<uint8_t> buffer;
+    catalog_.Serialize(buffer);
+    if (buffer.size() > PAGE_SIZE) {
+        return Status::IOError("Catalog size exceeds PAGE_SIZE (4KB)");
+    }
+    
+    Page page0;
+    page0.SetPageID(0);
+    std::memcpy(page0.GetData(), buffer.data(), buffer.size());
+    Status s = pager_.WritePage(page0);
+    if (!s.ok()) return s;
+
     std::cout << "Table created: " << stmt.table_name << std::endl;
     return Status::OK();
 }

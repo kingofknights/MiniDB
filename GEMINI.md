@@ -33,14 +33,14 @@ Follow the established five-layer separation of concerns:
 
 ---
 
-## 4. Development Roadmap (Version 1)
-1. **Milestone 1: Scaffold:** CMake setup, directory structure, and test framework.
-2. **Milestone 2: Pager:** Page abstraction and binary file I/O.
-3. **Milestone 3: Schema & Records:** Row serialization and round-trip validation.
-4. **Milestone 4: Table Heap:** Appending, scanning, and deleting rows with persistence.
-5. **Milestone 5: Parser:** Tokenizing and parsing SQL into AST.
-6. **Milestone 6: Execution Engine:** Wiring the AST to Storage/Catalog operations.
-7. **Milestone 7: REPL:** Completing the interactive user interface.
+## 4. Development Roadmap
+1. **Milestone 1-7:** Core Version 1 (Scaffold to REPL). [COMPLETED]
+2. **Milestone 8: Catalog Persistence & Advanced SQL:**
+   - Serialize/Deserialize Catalog to/from Page 0.
+   - Implement `DELETE` and `WHERE` equality predicates.
+   - Ensure table schemas survive process restarts.
+3. **Milestone 9: Basic Indexing (Future):**
+   - Single-column B-Tree or Hash index.
 
 ---
 

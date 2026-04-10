@@ -19,7 +19,7 @@ Status TableHeap::InsertRecord(const Record& record) {
     PageID target_page_id = INVALID_PAGE_ID;
     Page page;
     
-    for (PageID i = 0; i < pager_.GetPageCount(); ++i) {
+    for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
         pager_.ReadPage(i, page);
         PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
         
@@ -65,7 +65,7 @@ std::vector<Record> TableHeap::Scan() {
     std::vector<Record> records;
     Page page;
     
-    for (PageID i = 0; i < pager_.GetPageCount(); ++i) {
+    for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
         pager_.ReadPage(i, page);
         PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
         uint8_t* ptr = page.GetData() + sizeof(PageHeader);

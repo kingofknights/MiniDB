@@ -44,14 +44,20 @@
 - [ ] add end-to-end tests
 
 ## Milestone 7: REPL
-- [ ] implement prompt loop
-- [ ] add .exit
-- [ ] add .help
-- [ ] print basic results
-- [ ] document usage in README
+- [x] implement prompt loop
+- [x] add .exit
+- [x] add .help
+- [x] print basic results
+- [x] document usage in README
+
+## Milestone 8: Catalog Persistence & Advanced SQL
+- [ ] Implement Catalog serialization/deserialization.
+- [ ] Persist table schemas in the database file (Page 0).
+- [ ] Implement `DELETE` statement execution.
+- [ ] Implement `WHERE` equality filter (e.g., `WHERE id = 1`).
+- [ ] Add persistence tests for schemas and deletion.
 
 ## Stretch
-- [ ] WHERE equality filters
 - [ ] single-column index
 - [ ] benchmark script
 - [ ] better error reporting

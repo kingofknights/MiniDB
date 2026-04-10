@@ -35,6 +35,7 @@ protected:
 TEST_F(IntegrationTest, E2EFlow) {
     Status status = Status::OK();
     auto pager = Pager::Open(test_db_, status);
+    pager->AllocatePage(); // Catalog page
     Catalog catalog;
 
     ASSERT_TRUE(ExecuteSQL("CREATE TABLE employees (id INT, name TEXT);", catalog, *pager).ok());

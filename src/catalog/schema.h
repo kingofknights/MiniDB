@@ -13,6 +13,9 @@ public:
     size_t GetColumnCount() const { return columns_.size(); }
     const Column& GetColumn(size_t index) const { return columns_[index]; }
 
+    void Serialize(std::vector<uint8_t>& buffer) const;
+    static Schema Deserialize(const uint8_t* buffer, size_t& offset);
+
 private:
     std::vector<Column> columns_;
 };
