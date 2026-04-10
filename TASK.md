@@ -134,6 +134,15 @@ Do not implement unless specifically requested:
 - Support basic cross-table `JOIN` operations.
 - Expand query engine to handle multiple table sources.
 
+### Milestone 15: Transactions & WAL [ON HOLD]
+- Write-Ahead Logging (WAL) for durability.
+- Atomicity via `BEGIN/COMMIT/ROLLBACK`.
+- Simple crash recovery mechanism.
+
+### Milestone 16: Aggregations & Group By [ON HOLD]
+- Aggregate functions: `COUNT`, `SUM`, `AVG`.
+- Grouping logic via `GROUP BY`.
+
 ## Deliverable expectations
 For each milestone:
 - code

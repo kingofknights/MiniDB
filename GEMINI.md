@@ -57,12 +57,15 @@ Follow the established five-layer separation of concerns:
 7. **Milestone 13: Slotted Pages:** [COMPLETED]
    - Advanced page layout with slot directories.
    - Improved space management and row deletion reclamation.
-8. **Milestone 14: UPDATE & Nested Loop Join:**
+8. **Milestone 14: UPDATE & Nested Loop Join:** [COMPLETED]
    - Support for modifying existing records via `UPDATE`.
    - Fundamental relational `JOIN` support (Nested Loop).
    - Multi-table query execution infrastructure.
-9. **Milestone 15: Future Enhancements (Future):**
-   - Transactions (ACID), Write-Ahead Logging (WAL).
+9. **Milestone 15: Transactions & WAL (Future):**
+   - Atomicity and Durability via Write-Ahead Logging.
+   - Transaction control statements: `BEGIN`, `COMMIT`, `ROLLBACK`.
+10. **Milestone 16: Aggregations (Future):**
+    - Analytical queries: `COUNT`, `SUM`, `AVG`, `GROUP BY`.
 
 ---
 

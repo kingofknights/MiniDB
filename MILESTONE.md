@@ -92,11 +92,22 @@
 - [x] Update TableHeap to use slotted page offsets.
 
 ## Milestone 14: UPDATE & Nested Loop Join
-- [ ] Support `UPDATE table SET col = val WHERE condition`.
-- [ ] Implement `UPDATE` execution logic (in-place if possible, or delete+insert).
-- [ ] Support `SELECT * FROM t1 JOIN t2 ON t1.c1 = t2.c2` syntax.
-- [ ] Implement a basic Nested Loop Join algorithm.
-- [ ] Add functional tests for updates and joins.
+- [x] Support `UPDATE table SET col = val WHERE condition`.
+- [x] Implement `UPDATE` execution logic.
+- [x] Support `SELECT * FROM t1 JOIN t2 ON t1.c1 = t2.c2` syntax.
+- [x] Implement a basic Nested Loop Join algorithm.
+- [x] Add functional tests for updates and joins.
+
+## Milestone 15: Transactions & WAL [ON HOLD]
+- [ ] Implement a Log Manager for Write-Ahead Logging.
+- [ ] Support `BEGIN`, `COMMIT`, and `ROLLBACK` statements.
+- [ ] Implement ACID atomicity (all or nothing) for multi-statement changes.
+- [ ] Support crash recovery by replaying the log.
+
+## Milestone 16: Aggregations & Group By [ON HOLD]
+- [ ] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()`.
+- [ ] Implement `GROUP BY` logic.
+- [ ] Add `HAVING` clause filtering.
 
 ## Stretch
 - [ ] single-column index
