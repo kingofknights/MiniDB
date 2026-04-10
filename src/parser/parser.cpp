@@ -154,7 +154,15 @@ std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
     where->column_name = Consume().text;
     for (auto & c: where->column_name) c = std::toupper(c);
 
-    if (!Expect(TokenType::EQUAL, status, "Expected = in WHERE")) return nullptr;
+    if (Match(TokenType::EQUAL)) where->op = OpType::EQUAL;
+    else if (Match(TokenType::GREATER)) where->op = OpType::GREATER;
+    else if (Match(TokenType::LESS)) where->op = OpType::LESS;
+    else if (Match(TokenType::GREATER_EQUAL)) where->op = OpType::GREATER_EQUAL;
+    else if (Match(TokenType::LESS_EQUAL)) where->op = OpType::LESS_EQUAL;
+    else {
+        status = Status::IOError("Expected operator (=, >, <, >=, <=) in WHERE");
+        return nullptr;
+    }
 
     if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
         status = Status::IOError("Expected value in WHERE");

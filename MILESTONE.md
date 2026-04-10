@@ -73,12 +73,23 @@
 - [x] Document performance characteristics in ARCHITECTURE.md.
 
 ## Milestone 11: Networking & Remote Queries
-- [ ] Implement a basic TCP Socket Server (using standard POSIX sockets).
-- [ ] Define a simple text-based or length-prefixed wire protocol.
-- [ ] Create `minidb_server` to listen for incoming SQL connections.
-- [ ] Create `minidb_client` (or update REPL) to connect to a remote instance.
-- [ ] Ensure thread-safety for single-threaded v1 (one client at a time or simple locking).
-- [ ] Add network integration tests.
+- [x] Implement a basic TCP Socket Server.
+- [x] Define a simple text-based wire protocol.
+- [x] Create `minidb_server` and `minidb_client`.
+- [x] Add network integration tests.
+
+## Milestone 12: B-Tree Indexes
+- [ ] Implement B-Tree node structure (Internal vs Leaf nodes).
+- [ ] Support range query operators in Parser (`>`, `<`, `>=`, `<=`).
+- [ ] Implement B-Tree Insert and Search logic.
+- [ ] Support node splitting and rebalancing.
+- [ ] Integrate B-Tree into Executor for range scans.
+
+## Milestone 13: Slotted Pages
+- [ ] Redesign Page layout to use a Slot Directory.
+- [ ] Implement free space management within pages.
+- [ ] Support true row deletion and space reclamation.
+- [ ] Update TableHeap to use slotted page offsets.
 
 ## Stretch
 - [ ] single-column index

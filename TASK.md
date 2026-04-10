@@ -120,6 +120,15 @@ Do not implement unless specifically requested:
 - Create a client-server bridge for remote database operations.
 - Support "Mini DB over the wire" functionality.
 
+### Milestone 12: B-Tree Indexes
+- Support range queries (e.g., `WHERE id > 10`).
+- Implement B-Tree storage for ordered index lookups.
+- Support logarithmic search and range scans.
+
+### Milestone 13: Slotted Pages
+- Implement slotted page structure for variable-length records.
+- Efficient space reclamation and slot directory management.
+
 ## Deliverable expectations
 For each milestone:
 - code

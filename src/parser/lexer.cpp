@@ -62,6 +62,12 @@ Token Lexer::NextToken() {
         case '*': return {TokenType::STAR, "*"};
         case ';': return {TokenType::SEMICOLON, ";"};
         case '=': return {TokenType::EQUAL, "="};
+        case '>':
+            if (Peek() == '=') { Consume(); return {TokenType::GREATER_EQUAL, ">="}; }
+            return {TokenType::GREATER, ">"};
+        case '<':
+            if (Peek() == '=') { Consume(); return {TokenType::LESS_EQUAL, "<="}; }
+            return {TokenType::LESS, "<"};
     }
 
     return {TokenType::UNKNOWN, std::string(1, c)};

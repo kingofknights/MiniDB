@@ -1,4 +1,6 @@
 #include "src/catalog/catalog.h"
+#include "src/storage/index.h"
+#include "src/storage/btree.h"
 #include <cstring>
 
 namespace minidb {
@@ -86,24 +88,34 @@ std::unique_ptr<Catalog> Catalog::Deserialize(const uint8_t* buffer) {
     return catalog;
 }
 
-} // namespace minidb
-
-#include "src/storage/index.h"
-
-namespace minidb {
-
-void Catalog::AddIndex(std::string name, std::string table_name, std::string column_name) {
+void Catalog::AddIndex(std::string name, std::string table_name, std::string column_name, IndexType type) {
     for (auto & c: name) c = std::toupper(c);
     for (auto & c: table_name) c = std::toupper(c);
     for (auto & c: column_name) c = std::toupper(c);
-    indexes_[table_name].push_back(std::make_unique<HashIndex>(name, table_name, column_name));
+    
+    if (type == IndexType::HASH) {
+        hash_indexes_[table_name].push_back(std::make_unique<HashIndex>(name, table_name, column_name));
+    } else {
+        btree_indexes_[table_name].push_back(std::make_unique<BTreeIndex>(name, table_name, column_name));
+    }
 }
 
-std::vector<HashIndex*> Catalog::GetIndexes(std::string table_name) {
+std::vector<HashIndex*> Catalog::GetHashIndexes(std::string table_name) {
     for (auto & c: table_name) c = std::toupper(c);
     std::vector<HashIndex*> result;
-    if (indexes_.count(table_name)) {
-        for (const auto& idx : indexes_.at(table_name)) {
+    if (hash_indexes_.count(table_name)) {
+        for (const auto& idx : hash_indexes_.at(table_name)) {
+            result.push_back(idx.get());
+        }
+    }
+    return result;
+}
+
+std::vector<BTreeIndex*> Catalog::GetBTreeIndexes(std::string table_name) {
+    for (auto & c: table_name) c = std::toupper(c);
+    std::vector<BTreeIndex*> result;
+    if (btree_indexes_.count(table_name)) {
+        for (const auto& idx : btree_indexes_.at(table_name)) {
             result.push_back(idx.get());
         }
     }

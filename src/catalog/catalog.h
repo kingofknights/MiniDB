@@ -1,6 +1,7 @@
 #pragma once
 #include "src/catalog/schema.h"
 #include "src/storage/index.h"
+#include "src/storage/btree.h"
 #include <string>
 #include <unordered_map>
 #include <memory>
@@ -8,7 +9,10 @@
 
 namespace minidb {
 
-class HashIndex; // Forward declaration
+enum class IndexType {
+    HASH,
+    BTREE
+};
 
 /**
  * Catalog manages table metadata.
@@ -31,15 +35,17 @@ public:
         return *tables_.at(name);
     }
 
-    void AddIndex(std::string name, std::string table_name, std::string column_name);
-    std::vector<HashIndex*> GetIndexes(std::string table_name);
+    void AddIndex(std::string name, std::string table_name, std::string column_name, IndexType type = IndexType::HASH);
+    std::vector<HashIndex*> GetHashIndexes(std::string table_name);
+    std::vector<BTreeIndex*> GetBTreeIndexes(std::string table_name);
 
     void Serialize(std::vector<uint8_t>& buffer) const;
     static std::unique_ptr<Catalog> Deserialize(const uint8_t* buffer);
 
 private:
     std::unordered_map<std::string, std::unique_ptr<Schema>> tables_;
-    std::unordered_map<std::string, std::vector<std::unique_ptr<HashIndex>>> indexes_;
+    std::unordered_map<std::string, std::vector<std::unique_ptr<HashIndex>>> hash_indexes_;
+    std::unordered_map<std::string, std::vector<std::unique_ptr<BTreeIndex>>> btree_indexes_;
 };
 
 } // namespace minidb

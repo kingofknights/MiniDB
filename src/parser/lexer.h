@@ -17,6 +17,7 @@ enum class TokenType {
     
     // Punctuation
     LPAREN, RPAREN, COMMA, STAR, SEMICOLON, EQUAL,
+    GREATER, LESS, GREATER_EQUAL, LESS_EQUAL,
     
     // Special
     END_OF_FILE,

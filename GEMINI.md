@@ -46,12 +46,17 @@ Follow the established five-layer separation of concerns:
 4. **Milestone 10: Extensive Testing & Benchmarking:** [COMPLETED]
    - 100+ Unit Tests focusing on edge cases and reliability.
    - Performance benchmarking for scans vs indexed lookups.
-5. **Milestone 11: Networking & Remote Queries:**
+5. **Milestone 11: Networking & Remote Queries:** [COMPLETED]
    - TCP Socket Server for handling remote SQL connections.
    - Wire protocol for SQL requests and result delivery.
    - Client/Server architecture for multi-process interaction.
-6. **Milestone 12: Future Enhancements (Future):**
-   - B-Tree for range queries, Joins, etc.
+6. **Milestone 12: B-Tree Indexes:**
+   - Disk-friendly B-Tree implementation for ordered indexing.
+   - Support for range queries (`>`, `<`, etc.).
+   - Persistent index structure (on-disk nodes).
+7. **Milestone 13: Slotted Pages:**
+   - Advanced page layout with slot directories.
+   - Improved space management and row deletion reclamation.
 
 ---
 

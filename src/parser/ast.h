@@ -31,9 +31,18 @@ struct InsertStatement : public Statement {
     StatementType GetType() const override { return StatementType::INSERT; }
 };
 
+enum class OpType {
+    EQUAL,
+    GREATER,
+    LESS,
+    GREATER_EQUAL,
+    LESS_EQUAL
+};
+
 struct WhereClause {
     std::string column_name;
-    std::string value; // raw string value for equality
+    OpType op;
+    std::string value; // raw string value
 };
 
 struct SelectStatement : public Statement {
