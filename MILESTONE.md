@@ -66,11 +66,19 @@
 - [x] Add index functional tests.
 
 ## Milestone 10: Extensive Testing & Benchmarking
-- [ ] Achieve 100+ unit tests across all subsystems.
-- [ ] Implement edge-case testing (max string lengths, empty tables, etc.).
-- [ ] Create a dedicated benchmarking script for Insert/Select/Index performance.
-- [ ] Audit error handling and status codes.
-- [ ] Document performance characteristics in ARCHITECTURE.md.
+- [x] Achieve 100+ unit tests across all subsystems.
+- [x] Implement edge-case testing (max string lengths, empty tables, etc.).
+- [x] Create a dedicated benchmarking script for Insert/Select/Index performance.
+- [x] Audit error handling and status codes.
+- [x] Document performance characteristics in ARCHITECTURE.md.
+
+## Milestone 11: Networking & Remote Queries
+- [ ] Implement a basic TCP Socket Server (using standard POSIX sockets).
+- [ ] Define a simple text-based or length-prefixed wire protocol.
+- [ ] Create `minidb_server` to listen for incoming SQL connections.
+- [ ] Create `minidb_client` (or update REPL) to connect to a remote instance.
+- [ ] Ensure thread-safety for single-threaded v1 (one client at a time or simple locking).
+- [ ] Add network integration tests.
 
 ## Stretch
 - [ ] single-column index

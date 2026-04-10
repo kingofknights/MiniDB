@@ -43,10 +43,14 @@ Follow the established five-layer separation of concerns:
    - Implement `CREATE INDEX` and store metadata in Catalog.
    - Simple Hash Index for O(1) equality lookups on `INT` and `TEXT`.
    - Automatic index maintenance and query acceleration.
-4. **Milestone 10: Extensive Testing & Benchmarking:**
+4. **Milestone 10: Extensive Testing & Benchmarking:** [COMPLETED]
    - 100+ Unit Tests focusing on edge cases and reliability.
    - Performance benchmarking for scans vs indexed lookups.
-5. **Milestone 11: Future Enhancements (Future):**
+5. **Milestone 11: Networking & Remote Queries:**
+   - TCP Socket Server for handling remote SQL connections.
+   - Wire protocol for SQL requests and result delivery.
+   - Client/Server architecture for multi-process interaction.
+6. **Milestone 12: Future Enhancements (Future):**
    - B-Tree for range queries, Joins, etc.
 
 ---

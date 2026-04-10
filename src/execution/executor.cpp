@@ -20,24 +20,24 @@ bool Matches(const Record& record, const Schema& schema, const WhereClause* wher
     return false;
 }
 
-Status Executor::Execute(const Statement& stmt) {
+Status Executor::Execute(const Statement& stmt, std::ostream& out) {
     switch (stmt.GetType()) {
         case StatementType::CREATE_TABLE:
-            return ExecuteCreate(static_cast<const CreateTableStatement&>(stmt));
+            return ExecuteCreate(static_cast<const CreateTableStatement&>(stmt), out);
         case StatementType::INSERT:
-            return ExecuteInsert(static_cast<const InsertStatement&>(stmt));
+            return ExecuteInsert(static_cast<const InsertStatement&>(stmt), out);
         case StatementType::SELECT:
-            return ExecuteSelect(static_cast<const SelectStatement&>(stmt));
+            return ExecuteSelect(static_cast<const SelectStatement&>(stmt), out);
         case StatementType::DELETE:
-            return ExecuteDelete(static_cast<const DeleteStatement&>(stmt));
+            return ExecuteDelete(static_cast<const DeleteStatement&>(stmt), out);
         case StatementType::CREATE_INDEX:
-            return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt));
+            return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt), out);
         default:
             return Status::IOError("Execution for this statement type is not yet implemented");
     }
 }
 
-Status Executor::ExecuteCreate(const CreateTableStatement& stmt) {
+Status Executor::ExecuteCreate(const CreateTableStatement& stmt, std::ostream& out) {
     if (catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table already exists: " + stmt.table_name);
     }
@@ -56,11 +56,11 @@ Status Executor::ExecuteCreate(const CreateTableStatement& stmt) {
     Status s = pager_.WritePage(page0);
     if (!s.ok()) return s;
 
-    std::cout << "Table created: " << stmt.table_name << std::endl;
+    out << "Table created: " << stmt.table_name << std::endl;
     return Status::OK();
 }
 
-Status Executor::ExecuteInsert(const InsertStatement& stmt) {
+Status Executor::ExecuteInsert(const InsertStatement& stmt, std::ostream& out) {
     if (!catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table not found: " + stmt.table_name);
     }
@@ -96,12 +96,12 @@ Status Executor::ExecuteInsert(const InsertStatement& stmt) {
                 }
             }
         }
-        std::cout << "1 row inserted" << std::endl;
+        out << "1 row inserted" << std::endl;
     }
     return s;
 }
 
-Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt) {
+Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostream& out) {
     if (!catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table not found: " + stmt.table_name);
     }
@@ -139,11 +139,11 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt) {
         }
     }
 
-    std::cout << "Index created: " << stmt.index_name << std::endl;
+    out << "Index created: " << stmt.index_name << std::endl;
     return Status::OK();
 }
 
-Status Executor::ExecuteSelect(const SelectStatement& stmt) {
+Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
     if (!catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table not found: " + stmt.table_name);
     }
@@ -186,32 +186,32 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt) {
         }
     }
 
-    if (used_index) std::cout << "(Used index lookup)" << std::endl;
+    if (used_index) out << "(Used index lookup)" << std::endl;
     
     // Print results simple format
     for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
-        std::cout << std::setw(15) << schema.GetColumn(i).GetName() << (i == schema.GetColumnCount() - 1 ? "" : " | ");
+        out << std::setw(15) << schema.GetColumn(i).GetName() << (i == schema.GetColumnCount() - 1 ? "" : " | ");
     }
-    std::cout << "\n" << std::string(18 * schema.GetColumnCount(), '-') << "\n";
+    out << "\n" << std::string(18 * schema.GetColumnCount(), '-') << "\n";
 
     for (const auto& record : records) {
         for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
             const auto& val = record.GetValue(i);
             if (val.GetType() == DataType::INT) {
-                std::cout << std::setw(15) << val.AsInt();
+                out << std::setw(15) << val.AsInt();
             } else {
-                std::cout << std::setw(15) << val.AsString();
+                out << std::setw(15) << val.AsString();
             }
-            std::cout << (i == schema.GetColumnCount() - 1 ? "" : " | ");
+            out << (i == schema.GetColumnCount() - 1 ? "" : " | ");
         }
-        std::cout << "\n";
+        out << "\n";
     }
     
-    std::cout << "(" << records.size() << " rows)" << std::endl;
+    out << "(" << records.size() << " rows)" << std::endl;
     return Status::OK();
 }
 
-Status Executor::ExecuteDelete(const DeleteStatement& stmt) {
+Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
     if (!catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table not found: " + stmt.table_name);
     }
@@ -247,7 +247,7 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt) {
         }
     }
 
-    std::cout << deleted_count << " rows deleted" << std::endl;
+    out << deleted_count << " rows deleted" << std::endl;
     return Status::OK();
 }
 } // namespace minidb

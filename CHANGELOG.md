@@ -5,6 +5,21 @@ All notable changes to the Mini DB project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Planned
+- **Milestone 11: Networking & Remote Queries**
+  - Basic TCP server for remote SQL execution.
+  - Wire protocol for string-based queries and results.
+  - Remote client support.
+
+## [0.1.0-milestone-10] - 2026-04-10
+### Added
+- Expanded test suite to **102 individual test cases** covering Pager, Records, TableHeap, Parser, Executor, and Catalog.
+- Implemented edge-case testing for boundary conditions and large data handling.
+- Integrated `minidb_benchmark` utility for performance analysis.
+- Documented performance results showing O(1) index lookup vs O(N) sequential scan (~90x speedup).
+- Refined Parser error reporting and strict token consumption.
+
 ## [0.1.0-milestone-9] - 2026-04-10
 ### Added
 - `HashIndex` class for O(1) equality lookups on `INT` and `TEXT` columns.

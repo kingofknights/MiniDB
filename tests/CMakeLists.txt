@@ -12,7 +12,10 @@ add_executable(unit_tests
     extensive_parser_test.cpp
     extensive_execution_test.cpp
     extensive_common_test.cpp
+    network_test.cpp
 )
+
+find_package(Threads REQUIRED)
 
 target_link_libraries(unit_tests
     GTest::gtest_main
@@ -21,6 +24,8 @@ target_link_libraries(unit_tests
     minidb_catalog
     minidb_parser
     minidb_execution
+    minidb_network
+    Threads::Threads
 )
 
 include(GoogleTest)

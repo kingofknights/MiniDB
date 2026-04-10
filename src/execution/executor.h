@@ -12,14 +12,14 @@ class Executor {
 public:
     Executor(Catalog& catalog, Pager& pager) : catalog_(catalog), pager_(pager) {}
 
-    Status Execute(const Statement& stmt);
+    Status Execute(const Statement& stmt, std::ostream& out = std::cout);
 
 private:
-    Status ExecuteCreate(const CreateTableStatement& stmt);
-    Status ExecuteInsert(const InsertStatement& stmt);
-    Status ExecuteSelect(const SelectStatement& stmt);
-    Status ExecuteDelete(const DeleteStatement& stmt);
-    Status ExecuteCreateIndex(const CreateIndexStatement& stmt);
+    Status ExecuteCreate(const CreateTableStatement& stmt, std::ostream& out);
+    Status ExecuteInsert(const InsertStatement& stmt, std::ostream& out);
+    Status ExecuteSelect(const SelectStatement& stmt, std::ostream& out);
+    Status ExecuteDelete(const DeleteStatement& stmt, std::ostream& out);
+    Status ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostream& out);
 
     Catalog& catalog_;
     Pager& pager_;

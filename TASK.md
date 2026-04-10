@@ -115,6 +115,11 @@ Do not implement unless specifically requested:
 - Comprehensive coverage for Pager, Parser, and Execution engine.
 - Benchmarking for O(N) vs O(1) query performance.
 
+### Milestone 11: Networking & Remote Queries
+- Implement a TCP server listening for SQL strings.
+- Create a client-server bridge for remote database operations.
+- Support "Mini DB over the wire" functionality.
+
 ## Deliverable expectations
 For each milestone:
 - code

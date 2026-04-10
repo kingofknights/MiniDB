@@ -7,6 +7,7 @@ add_subdirectory(storage)
 add_subdirectory(catalog)
 add_subdirectory(parser)
 add_subdirectory(execution)
+add_subdirectory(network)
 
 # Main REPL/Executable
 add_executable(minidb_repl repl/main.cpp)
@@ -17,3 +18,10 @@ target_link_libraries(minidb_repl
     minidb_parser 
     minidb_execution
 )
+
+# Server and Client executables
+add_executable(minidb_server server_main.cpp)
+target_link_libraries(minidb_server minidb_network)
+
+add_executable(minidb_client client_main.cpp)
+target_link_libraries(minidb_client minidb_network)
