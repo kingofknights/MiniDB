@@ -35,12 +35,16 @@ Follow the established five-layer separation of concerns:
 
 ## 4. Development Roadmap
 1. **Milestone 1-7:** Core Version 1 (Scaffold to REPL). [COMPLETED]
-2. **Milestone 8: Catalog Persistence & Advanced SQL:**
+2. **Milestone 8: Catalog Persistence & Advanced SQL:** [COMPLETED]
    - Serialize/Deserialize Catalog to/from Page 0.
    - Implement `DELETE` and `WHERE` equality predicates.
    - Ensure table schemas survive process restarts.
-3. **Milestone 9: Basic Indexing (Future):**
-   - Single-column B-Tree or Hash index.
+3. **Milestone 9: Basic Indexing:**
+   - Implement `CREATE INDEX` and store metadata in Catalog.
+   - Simple Hash Index for O(1) equality lookups on `INT` and `TEXT`.
+   - Automatic index maintenance and query acceleration.
+4. **Milestone 10: Future Enhancements (Future):**
+   - B-Tree for range queries, Joins, etc.
 
 ---
 

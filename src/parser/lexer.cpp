@@ -8,6 +8,7 @@ static const std::unordered_map<std::string, TokenType> KEYWORDS = {
     {"CREATE", TokenType::CREATE}, {"TABLE", TokenType::TABLE},
     {"INSERT", TokenType::INSERT}, {"INTO", TokenType::INTO}, {"VALUES", TokenType::VALUES},
     {"SELECT", TokenType::SELECT}, {"FROM", TokenType::FROM}, {"DELETE", TokenType::DELETE},
+    {"WHERE", TokenType::WHERE}, {"INDEX", TokenType::INDEX}, {"ON", TokenType::ON},
     {"INT", TokenType::INT}, {"TEXT", TokenType::TEXT}
 };
 

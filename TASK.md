@@ -104,6 +104,12 @@ Do not implement unless specifically requested:
 - Support `WHERE <col> = <value>` for SELECT and DELETE.
 - Integration tests for cross-restart schema availability.
 
+### Milestone 9: Basic Indexing
+- Support `CREATE INDEX` syntax.
+- Implement Hash Index storage for O(1) equality lookups.
+- Automatically use index in `SELECT` and `DELETE` with `WHERE`.
+- Maintain index integrity during `INSERT`.
+
 ## Deliverable expectations
 For each milestone:
 - code

@@ -3,7 +3,10 @@
 namespace minidb {
 
 std::unique_ptr<Statement> Parser::Parse(Status& status) {
-    if (Match(TokenType::CREATE)) return ParseCreateTable(status);
+    if (Match(TokenType::CREATE)) {
+        if (Peek().type == TokenType::INDEX) return ParseCreateIndex(status);
+        return ParseCreateTable(status);
+    }
     if (Match(TokenType::INSERT)) return ParseInsert(status);
     if (Match(TokenType::SELECT)) return ParseSelect(status);
     if (Match(TokenType::DELETE)) return ParseDelete(status);
@@ -60,6 +63,33 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
     }
     
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
+    return stmt;
+}
+
+std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
+    auto stmt = std::make_unique<CreateIndexStatement>();
+    if (!Expect(TokenType::INDEX, status, "Expected INDEX")) return nullptr;
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected index name");
+        return nullptr;
+    }
+    stmt->index_name = Consume().text;
+    
+    if (!Expect(TokenType::ON, status, "Expected ON")) return nullptr;
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected table name");
+        return nullptr;
+    }
+    stmt->table_name = Consume().text;
+
+    if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected column name");
+        return nullptr;
+    }
+    stmt->column_name = Consume().text;
+    if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
+
     return stmt;
 }
 

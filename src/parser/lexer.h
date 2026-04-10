@@ -7,7 +7,7 @@ namespace minidb {
 enum class TokenType {
     // Keywords
     CREATE, TABLE, INSERT, INTO, VALUES, SELECT, FROM, DELETE,
-    WHERE,
+    WHERE, INDEX, ON,
     INT, TEXT,
     
     // Literals

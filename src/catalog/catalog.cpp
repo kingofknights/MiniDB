@@ -87,3 +87,27 @@ std::unique_ptr<Catalog> Catalog::Deserialize(const uint8_t* buffer) {
 }
 
 } // namespace minidb
+
+#include "src/storage/index.h"
+
+namespace minidb {
+
+void Catalog::AddIndex(std::string name, std::string table_name, std::string column_name) {
+    for (auto & c: name) c = std::toupper(c);
+    for (auto & c: table_name) c = std::toupper(c);
+    for (auto & c: column_name) c = std::toupper(c);
+    indexes_[table_name].push_back(std::make_unique<HashIndex>(name, table_name, column_name));
+}
+
+std::vector<HashIndex*> Catalog::GetIndexes(std::string table_name) {
+    for (auto & c: table_name) c = std::toupper(c);
+    std::vector<HashIndex*> result;
+    if (indexes_.count(table_name)) {
+        for (const auto& idx : indexes_.at(table_name)) {
+            result.push_back(idx.get());
+        }
+    }
+    return result;
+}
+
+} // namespace minidb

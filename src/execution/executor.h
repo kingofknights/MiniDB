@@ -19,6 +19,7 @@ private:
     Status ExecuteInsert(const InsertStatement& stmt);
     Status ExecuteSelect(const SelectStatement& stmt);
     Status ExecuteDelete(const DeleteStatement& stmt);
+    Status ExecuteCreateIndex(const CreateIndexStatement& stmt);
 
     Catalog& catalog_;
     Pager& pager_;

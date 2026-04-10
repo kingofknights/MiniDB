@@ -1,4 +1,5 @@
 #include "src/execution/executor.h"
+#include "src/storage/index.h"
 #include <iomanip>
 #include <cstring>
 
@@ -29,6 +30,8 @@ Status Executor::Execute(const Statement& stmt) {
             return ExecuteSelect(static_cast<const SelectStatement&>(stmt));
         case StatementType::DELETE:
             return ExecuteDelete(static_cast<const DeleteStatement&>(stmt));
+        case StatementType::CREATE_INDEX:
+            return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt));
         default:
             return Status::IOError("Execution for this statement type is not yet implemented");
     }
@@ -80,11 +83,64 @@ Status Executor::ExecuteInsert(const InsertStatement& stmt) {
         current_table_ = std::make_unique<TableHeap>(pager_, schema);
     }
 
-    Status s = current_table_->InsertRecord(Record(std::move(values)));
+    Record rec(std::move(values));
+    Status s = current_table_->InsertRecord(rec);
     if (s.ok()) {
+        // Update indexes
+        auto indexes = catalog_.GetIndexes(stmt.table_name);
+        for (auto* idx : indexes) {
+            for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+                if (schema.GetColumn(i).GetName() == idx->GetColumnName()) {
+                    idx->Insert(rec.GetValue(i), rec);
+                    break;
+                }
+            }
+        }
         std::cout << "1 row inserted" << std::endl;
     }
     return s;
+}
+
+Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt) {
+    if (!catalog_.TableExists(stmt.table_name)) {
+        return Status::IOError("Table not found: " + stmt.table_name);
+    }
+    const Schema& schema = catalog_.GetSchema(stmt.table_name);
+    
+    bool col_found = false;
+    for (const auto& col : schema.GetColumns()) {
+        if (col.GetName() == stmt.column_name) {
+            col_found = true;
+            break;
+        }
+    }
+    if (!col_found) return Status::IOError("Column not found: " + stmt.column_name);
+
+    catalog_.AddIndex(stmt.index_name, stmt.table_name, stmt.column_name);
+    
+    // Populate index
+    auto indexes = catalog_.GetIndexes(stmt.table_name);
+    HashIndex* new_idx = nullptr;
+    for (auto* idx : indexes) {
+        // Find the one we just added (simplified)
+        new_idx = idx; 
+    }
+
+    if (!current_table_) {
+        current_table_ = std::make_unique<TableHeap>(pager_, schema);
+    }
+    auto records = current_table_->Scan();
+    for (const auto& rec : records) {
+        for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+            if (schema.GetColumn(i).GetName() == stmt.column_name) {
+                new_idx->Insert(rec.GetValue(i), rec);
+                break;
+            }
+        }
+    }
+
+    std::cout << "Index created: " << stmt.index_name << std::endl;
+    return Status::OK();
 }
 
 Status Executor::ExecuteSelect(const SelectStatement& stmt) {
@@ -97,13 +153,40 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt) {
         current_table_ = std::make_unique<TableHeap>(pager_, schema);
     }
 
-    auto all_records = current_table_->Scan();
     std::vector<Record> records;
-    for (auto& rec : all_records) {
-        if (Matches(rec, schema, stmt.where.get())) {
-            records.push_back(std::move(rec));
+    bool used_index = false;
+
+    if (stmt.where) {
+        auto indexes = catalog_.GetIndexes(stmt.table_name);
+        for (auto* idx : indexes) {
+            if (idx->GetColumnName() == stmt.where->column_name) {
+                // Find column index to get type
+                for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+                    if (schema.GetColumn(i).GetName() == idx->GetColumnName()) {
+                        Value key(0);
+                        if (schema.GetColumn(i).GetType() == DataType::INT) key = Value(std::stoi(stmt.where->value));
+                        else key = Value(stmt.where->value);
+                        
+                        records = idx->Lookup(key);
+                        used_index = true;
+                        break;
+                    }
+                }
+            }
+            if (used_index) break;
         }
     }
+
+    if (!used_index) {
+        auto all_records = current_table_->Scan();
+        for (auto& rec : all_records) {
+            if (Matches(rec, schema, stmt.where.get())) {
+                records.push_back(std::move(rec));
+            }
+        }
+    }
+
+    if (used_index) std::cout << "(Used index lookup)" << std::endl;
     
     // Print results simple format
     for (size_t i = 0; i < schema.GetColumnCount(); ++i) {

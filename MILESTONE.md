@@ -51,11 +51,19 @@
 - [x] document usage in README
 
 ## Milestone 8: Catalog Persistence & Advanced SQL
-- [ ] Implement Catalog serialization/deserialization.
-- [ ] Persist table schemas in the database file (Page 0).
-- [ ] Implement `DELETE` statement execution.
-- [ ] Implement `WHERE` equality filter (e.g., `WHERE id = 1`).
-- [ ] Add persistence tests for schemas and deletion.
+- [x] Implement Catalog serialization/deserialization.
+- [x] Persist table schemas in the database file (Page 0).
+- [x] Implement `DELETE` statement execution.
+- [x] Implement `WHERE` equality filter (e.g., `WHERE id = 1`).
+- [x] Add persistence tests for schemas and deletion.
+
+## Milestone 9: Basic Indexing
+- [ ] Parse `CREATE INDEX index_name ON table_name (column_name)`.
+- [ ] Store index metadata in the Catalog.
+- [ ] Implement a simple Hash Index for equality lookups.
+- [ ] Integrate index usage into the Executor for `SELECT` and `DELETE`.
+- [ ] Update index automatically on `INSERT`.
+- [ ] Add index functional tests.
 
 ## Stretch
 - [ ] single-column index
