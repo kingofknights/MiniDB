@@ -30,14 +30,20 @@ struct InsertStatement : public Statement {
     StatementType GetType() const override { return StatementType::INSERT; }
 };
 
+struct WhereClause {
+    std::string column_name;
+    std::string value; // raw string value for equality
+};
+
 struct SelectStatement : public Statement {
     std::string table_name;
-    bool select_all = true;
+    std::unique_ptr<WhereClause> where;
     StatementType GetType() const override { return StatementType::SELECT; }
 };
 
 struct DeleteStatement : public Statement {
     std::string table_name;
+    std::unique_ptr<WhereClause> where;
     StatementType GetType() const override { return StatementType::DELETE; }
 };
 

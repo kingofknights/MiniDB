@@ -22,6 +22,7 @@ private:
     std::unique_ptr<Statement> ParseInsert(Status& status);
     std::unique_ptr<Statement> ParseSelect(Status& status);
     std::unique_ptr<Statement> ParseDelete(Status& status);
+    std::unique_ptr<WhereClause> ParseWhere(Status& status);
 
     std::vector<Token> tokens_;
     size_t pos_;

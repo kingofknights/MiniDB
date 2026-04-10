@@ -25,10 +25,14 @@ private:
 
 class Record {
 public:
-    Record(std::vector<Value> values) : values_(std::move(values)) {}
+    Record(std::vector<Value> values, bool deleted = false) 
+        : values_(std::move(values)), deleted_(deleted) {}
 
     const std::vector<Value>& GetValues() const { return values_; }
     const Value& GetValue(size_t index) const { return values_[index]; }
+    
+    bool IsDeleted() const { return deleted_; }
+    void MarkDeleted() { deleted_ = true; }
 
     // Serialize record into a byte buffer according to the schema
     static std::vector<uint8_t> Serialize(const Schema& schema, const Record& record);
@@ -38,6 +42,7 @@ public:
 
 private:
     std::vector<Value> values_;
+    bool deleted_;
 };
 
 } // namespace minidb

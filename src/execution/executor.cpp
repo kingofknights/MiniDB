@@ -4,6 +4,21 @@
 
 namespace minidb {
 
+bool Matches(const Record& record, const Schema& schema, const WhereClause* where) {
+    if (!where) return true;
+    for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+        if (schema.GetColumn(i).GetName() == where->column_name) {
+            const auto& val = record.GetValue(i);
+            if (val.GetType() == DataType::INT) {
+                return std::to_string(val.AsInt()) == where->value;
+            } else {
+                return val.AsString() == where->value;
+            }
+        }
+    }
+    return false;
+}
+
 Status Executor::Execute(const Statement& stmt) {
     switch (stmt.GetType()) {
         case StatementType::CREATE_TABLE:
@@ -12,6 +27,8 @@ Status Executor::Execute(const Statement& stmt) {
             return ExecuteInsert(static_cast<const InsertStatement&>(stmt));
         case StatementType::SELECT:
             return ExecuteSelect(static_cast<const SelectStatement&>(stmt));
+        case StatementType::DELETE:
+            return ExecuteDelete(static_cast<const DeleteStatement&>(stmt));
         default:
             return Status::IOError("Execution for this statement type is not yet implemented");
     }
@@ -80,7 +97,13 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt) {
         current_table_ = std::make_unique<TableHeap>(pager_, schema);
     }
 
-    auto records = current_table_->Scan();
+    auto all_records = current_table_->Scan();
+    std::vector<Record> records;
+    for (auto& rec : all_records) {
+        if (Matches(rec, schema, stmt.where.get())) {
+            records.push_back(std::move(rec));
+        }
+    }
     
     // Print results simple format
     for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
@@ -105,4 +128,43 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt) {
     return Status::OK();
 }
 
+Status Executor::ExecuteDelete(const DeleteStatement& stmt) {
+    if (!catalog_.TableExists(stmt.table_name)) {
+        return Status::IOError("Table not found: " + stmt.table_name);
+    }
+    const Schema& schema = catalog_.GetSchema(stmt.table_name);
+    
+    if (!current_table_) {
+        current_table_ = std::make_unique<TableHeap>(pager_, schema);
+    }
+
+    uint32_t deleted_count = 0;
+    Page page;
+    for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
+        pager_.ReadPage(i, page);
+        struct PageHeader { uint32_t num_records; };
+        PageHeader* header = reinterpret_cast<PageHeader*>(page.GetData());
+        uint8_t* ptr = page.GetData() + sizeof(PageHeader);
+        bool page_modified = false;
+
+        for (uint32_t r = 0; r < header->num_records; ++r) {
+            size_t bytes_read = 0;
+            Record rec = Record::Deserialize(schema, ptr, bytes_read);
+            if (!rec.IsDeleted() && Matches(rec, schema, stmt.where.get())) {
+                *ptr = 1; // Mark tombstone
+                page_modified = true;
+                deleted_count++;
+            }
+            ptr += bytes_read;
+        }
+
+        if (page_modified) {
+            Status s = pager_.WritePage(page);
+            if (!s.ok()) return s;
+        }
+    }
+
+    std::cout << deleted_count << " rows deleted" << std::endl;
+    return Status::OK();
+}
 } // namespace minidb

@@ -21,6 +21,13 @@ public:
     // Scan all records in the table
     std::vector<Record> Scan();
 
+    // Mark records matching a predicate as deleted
+    Status UpdatePage(PageID page_id, const Page& page) {
+        return pager_.WritePage(page);
+    }
+    
+    Pager& GetPager() { return pager_; }
+
 private:
     Pager& pager_;
     const Schema& schema_;

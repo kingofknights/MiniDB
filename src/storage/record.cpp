@@ -6,6 +6,7 @@ namespace minidb {
 
 std::vector<uint8_t> Record::Serialize(const Schema& schema, const Record& record) {
     std::vector<uint8_t> buffer;
+    buffer.push_back(record.IsDeleted() ? 1 : 0);
     for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
         const auto& col = schema.GetColumn(i);
         const auto& val = record.GetValue(i);
@@ -28,8 +29,9 @@ std::vector<uint8_t> Record::Serialize(const Schema& schema, const Record& recor
 }
 
 Record Record::Deserialize(const Schema& schema, const uint8_t* data, size_t& bytes_read) {
-    std::vector<Value> values;
     size_t offset = 0;
+    bool deleted = data[offset++] == 1;
+    std::vector<Value> values;
     for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
         const auto& col = schema.GetColumn(i);
         if (col.GetType() == DataType::INT) {
@@ -47,7 +49,8 @@ Record Record::Deserialize(const Schema& schema, const uint8_t* data, size_t& by
         }
     }
     bytes_read = offset;
-    return Record(std::move(values));
+    return Record(std::move(values), deleted);
 }
 
 } // namespace minidb
+

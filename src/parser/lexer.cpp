@@ -60,6 +60,7 @@ Token Lexer::NextToken() {
         case ',': return {TokenType::COMMA, ","};
         case '*': return {TokenType::STAR, "*"};
         case ';': return {TokenType::SEMICOLON, ";"};
+        case '=': return {TokenType::EQUAL, "="};
     }
 
     return {TokenType::UNKNOWN, std::string(1, c)};

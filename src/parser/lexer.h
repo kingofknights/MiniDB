@@ -7,6 +7,7 @@ namespace minidb {
 enum class TokenType {
     // Keywords
     CREATE, TABLE, INSERT, INTO, VALUES, SELECT, FROM, DELETE,
+    WHERE,
     INT, TEXT,
     
     // Literals
@@ -15,7 +16,7 @@ enum class TokenType {
     STRING_LITERAL,
     
     // Punctuation
-    LPAREN, RPAREN, COMMA, STAR, SEMICOLON,
+    LPAREN, RPAREN, COMMA, STAR, SEMICOLON, EQUAL,
     
     // Special
     END_OF_FILE,

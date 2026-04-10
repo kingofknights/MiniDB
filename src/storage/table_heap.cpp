@@ -72,7 +72,10 @@ std::vector<Record> TableHeap::Scan() {
         
         for (uint32_t r = 0; r < header->num_records; ++r) {
             size_t bytes_read = 0;
-            records.push_back(Record::Deserialize(schema_, ptr, bytes_read));
+            Record rec = Record::Deserialize(schema_, ptr, bytes_read);
+            if (!rec.IsDeleted()) {
+                records.push_back(std::move(rec));
+            }
             ptr += bytes_read;
         }
     }

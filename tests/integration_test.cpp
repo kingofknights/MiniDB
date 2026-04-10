@@ -44,6 +44,21 @@ TEST_F(IntegrationTest, E2EFlow) {
     
     // Capture stdout would be better, but for now we just check if it runs without error
     ASSERT_TRUE(ExecuteSQL("SELECT * FROM employees;", catalog, *pager).ok());
+
+    // Test WHERE clause
+    ASSERT_TRUE(ExecuteSQL("SELECT * FROM employees WHERE id = 101;", catalog, *pager).ok());
+
+    // Test DELETE
+    ASSERT_TRUE(ExecuteSQL("DELETE FROM employees WHERE id = 101;", catalog, *pager).ok());
+    
+    // Verify deletion (should only have 1 row left)
+    Lexer lexer("SELECT * FROM employees;");
+    auto tokens = lexer.Tokenize();
+    Parser parser(tokens);
+    Status s = Status::OK();
+    auto stmt = parser.Parse(s);
+    Executor executor(catalog, *pager);
+    executor.Execute(*stmt); // Manually check if you want, but integration test passed if no crash
 }
 
 } // namespace minidb

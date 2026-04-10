@@ -88,6 +88,27 @@ std::unique_ptr<Statement> Parser::ParseInsert(Status& status) {
     return stmt;
 }
 
+std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
+    if (!Match(TokenType::WHERE)) return nullptr;
+    
+    auto where = std::make_unique<WhereClause>();
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected column name in WHERE");
+        return nullptr;
+    }
+    where->column_name = Consume().text;
+    for (auto & c: where->column_name) c = std::toupper(c);
+
+    if (!Expect(TokenType::EQUAL, status, "Expected = in WHERE")) return nullptr;
+
+    if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
+        status = Status::IOError("Expected value in WHERE");
+        return nullptr;
+    }
+    where->value = Consume().text;
+    return where;
+}
+
 std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
     auto stmt = std::make_unique<SelectStatement>();
     if (!Expect(TokenType::STAR, status, "Expected *")) return nullptr;
@@ -97,6 +118,7 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    stmt->where = ParseWhere(status);
     return stmt;
 }
 
@@ -108,6 +130,7 @@ std::unique_ptr<Statement> Parser::ParseDelete(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    stmt->where = ParseWhere(status);
     return stmt;
 }
 
