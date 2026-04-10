@@ -58,12 +58,19 @@
 - [x] Add persistence tests for schemas and deletion.
 
 ## Milestone 9: Basic Indexing
-- [ ] Parse `CREATE INDEX index_name ON table_name (column_name)`.
-- [ ] Store index metadata in the Catalog.
-- [ ] Implement a simple Hash Index for equality lookups.
-- [ ] Integrate index usage into the Executor for `SELECT` and `DELETE`.
-- [ ] Update index automatically on `INSERT`.
-- [ ] Add index functional tests.
+- [x] Parse `CREATE INDEX index_name ON table_name (column_name)`.
+- [x] Store index metadata in the Catalog.
+- [x] Implement a simple Hash Index for equality lookups.
+- [x] Integrate index usage into the Executor for `SELECT` and `DELETE`.
+- [x] Update index automatically on `INSERT`.
+- [x] Add index functional tests.
+
+## Milestone 10: Extensive Testing & Benchmarking
+- [ ] Achieve 100+ unit tests across all subsystems.
+- [ ] Implement edge-case testing (max string lengths, empty tables, etc.).
+- [ ] Create a dedicated benchmarking script for Insert/Select/Index performance.
+- [ ] Audit error handling and status codes.
+- [ ] Document performance characteristics in ARCHITECTURE.md.
 
 ## Stretch
 - [ ] single-column index

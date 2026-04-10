@@ -110,6 +110,11 @@ Do not implement unless specifically requested:
 - Automatically use index in `SELECT` and `DELETE` with `WHERE`.
 - Maintain index integrity during `INSERT`.
 
+### Milestone 10: Extensive Testing & Benchmarking
+- Expand test suite to 100+ individual test cases.
+- Comprehensive coverage for Pager, Parser, and Execution engine.
+- Benchmarking for O(N) vs O(1) query performance.
+
 ## Deliverable expectations
 For each milestone:
 - code

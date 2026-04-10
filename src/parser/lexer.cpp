@@ -31,7 +31,7 @@ Token Lexer::NextToken() {
     char c = Peek();
     if (c == '\0') return {TokenType::END_OF_FILE, ""};
 
-    if (std::isalpha(c)) {
+    if (std::isalpha(c) || c == '_') {
         std::string text;
         while (std::isalnum(Peek()) || Peek() == '_') {
             text += std::toupper(Consume());

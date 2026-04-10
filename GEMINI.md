@@ -39,11 +39,14 @@ Follow the established five-layer separation of concerns:
    - Serialize/Deserialize Catalog to/from Page 0.
    - Implement `DELETE` and `WHERE` equality predicates.
    - Ensure table schemas survive process restarts.
-3. **Milestone 9: Basic Indexing:**
+3. **Milestone 9: Basic Indexing:** [COMPLETED]
    - Implement `CREATE INDEX` and store metadata in Catalog.
    - Simple Hash Index for O(1) equality lookups on `INT` and `TEXT`.
    - Automatic index maintenance and query acceleration.
-4. **Milestone 10: Future Enhancements (Future):**
+4. **Milestone 10: Extensive Testing & Benchmarking:**
+   - 100+ Unit Tests focusing on edge cases and reliability.
+   - Performance benchmarking for scans vs indexed lookups.
+5. **Milestone 11: Future Enhancements (Future):**
    - B-Tree for range queries, Joins, etc.
 
 ---

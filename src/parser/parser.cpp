@@ -3,16 +3,30 @@
 namespace minidb {
 
 std::unique_ptr<Statement> Parser::Parse(Status& status) {
+    std::unique_ptr<Statement> stmt;
     if (Match(TokenType::CREATE)) {
-        if (Peek().type == TokenType::INDEX) return ParseCreateIndex(status);
-        return ParseCreateTable(status);
+        if (Peek().type == TokenType::INDEX) stmt = ParseCreateIndex(status);
+        else stmt = ParseCreateTable(status);
     }
-    if (Match(TokenType::INSERT)) return ParseInsert(status);
-    if (Match(TokenType::SELECT)) return ParseSelect(status);
-    if (Match(TokenType::DELETE)) return ParseDelete(status);
-    
-    status = Status::IOError("Unexpected token: " + Peek().text);
-    return nullptr;
+    else if (Match(TokenType::INSERT)) stmt = ParseInsert(status);
+    else if (Match(TokenType::SELECT)) stmt = ParseSelect(status);
+    else if (Match(TokenType::DELETE)) stmt = ParseDelete(status);
+    else {
+        status = Status::IOError("Unexpected token: " + Peek().text);
+        return nullptr;
+    }
+
+    if (stmt && status.ok()) {
+        // Optional semicolon
+        Match(TokenType::SEMICOLON);
+        // Ensure no more tokens
+        if (Peek().type != TokenType::END_OF_FILE) {
+            status = Status::IOError("Extra tokens after statement: " + Peek().text);
+            return nullptr;
+        }
+    }
+
+    return stmt;
 }
 
 bool Parser::Match(TokenType type) {
@@ -43,7 +57,11 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
     
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
     
+    bool first = true;
     while (Peek().type != TokenType::RPAREN) {
+        if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
+        first = false;
+
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected column name");
             return nullptr;
@@ -59,9 +77,13 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
         }
         
         stmt->columns.emplace_back(col_name, type);
-        if (!Match(TokenType::COMMA)) break;
     }
     
+    if (stmt->columns.empty()) {
+        status = Status::IOError("Table must have at least one column");
+        return nullptr;
+    }
+
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
     return stmt;
 }
@@ -105,13 +127,16 @@ std::unique_ptr<Statement> Parser::ParseInsert(Status& status) {
     if (!Expect(TokenType::VALUES, status, "Expected VALUES")) return nullptr;
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
     
+    bool first = true;
     while (Peek().type != TokenType::RPAREN) {
+        if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
+        first = false;
+
         if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
             status = Status::IOError("Expected value");
             return nullptr;
         }
         stmt->raw_values.push_back(Consume().text);
-        if (!Match(TokenType::COMMA)) break;
     }
     
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;

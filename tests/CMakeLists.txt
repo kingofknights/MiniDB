@@ -8,6 +8,10 @@ add_executable(unit_tests
     integration_test.cpp
     catalog_test.cpp
     index_test.cpp
+    extensive_storage_test.cpp
+    extensive_parser_test.cpp
+    extensive_execution_test.cpp
+    extensive_common_test.cpp
 )
 
 target_link_libraries(unit_tests

@@ -14,6 +14,9 @@ struct PageHeader {
 
 Status TableHeap::InsertRecord(const Record& record) {
     auto serialized = Record::Serialize(schema_, record);
+    if (serialized.size() + sizeof(PageHeader) > PAGE_SIZE) {
+        return Status::IOError("Record too large to fit in a single page");
+    }
     
     // Find a page with enough space or allocate a new one
     PageID target_page_id = INVALID_PAGE_ID;

@@ -5,6 +5,14 @@ All notable changes to the Mini DB project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.0-milestone-9] - 2026-04-10
+### Added
+- `HashIndex` class for O(1) equality lookups on `INT` and `TEXT` columns.
+- Support for `CREATE INDEX index_name ON table_name (column_name)`.
+- Index-accelerated `SELECT` queries for equality predicates.
+- Automatic index updates during `INSERT` operations.
+- Index functional tests in `tests/index_test.cpp`.
+
 ## [0.1.0-milestone-8] - 2026-04-10
 ### Added
 - Catalog Persistence: Table schemas are now serialized to Page 0 and survive restarts.

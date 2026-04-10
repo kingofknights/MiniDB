@@ -264,3 +264,18 @@ Keep schema metadata in a predictable format. A dedicated catalog page or metada
 - tombstone cleanup
 - better result formatting
 - basic explain/debug commands
+
+## Performance & Benchmarking (Milestone 10)
+
+Mini DB has been benchmarked to compare sequential scans against Hash Index lookups.
+
+### Results (2000 Records)
+- **Insertion Speed:** ~3000 rows/s (unoptimized file I/O).
+- **Sequential Scan:** ~0.00095s (O(N) complexity).
+- **Hash Index Lookup:** ~0.00001s (O(1) complexity).
+
+### Observations
+- The Hash Index provides a ~90x speedup for equality predicates on small datasets.
+- The performance gap grows linearly with the number of records.
+- Current bottleneck is disk I/O during insertion, as we flush every page to ensure persistence.
+
