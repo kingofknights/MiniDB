@@ -129,6 +129,11 @@ Do not implement unless specifically requested:
 - Implement slotted page structure for variable-length records.
 - Efficient space reclamation and slot directory management.
 
+### Milestone 14: UPDATE & Nested Loop Join
+- Implement `UPDATE` statement support.
+- Support basic cross-table `JOIN` operations.
+- Expand query engine to handle multiple table sources.
+
 ## Deliverable expectations
 For each milestone:
 - code

@@ -11,6 +11,7 @@ std::unique_ptr<Statement> Parser::Parse(Status& status) {
     else if (Match(TokenType::INSERT)) stmt = ParseInsert(status);
     else if (Match(TokenType::SELECT)) stmt = ParseSelect(status);
     else if (Match(TokenType::DELETE)) stmt = ParseDelete(status);
+    else if (Match(TokenType::UPDATE)) stmt = ParseUpdate(status);
     else {
         status = Status::IOError("Unexpected token: " + Peek().text);
         return nullptr;
@@ -181,6 +182,40 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+
+    // Optional JOIN
+    if (Match(TokenType::JOIN)) {
+        auto join = std::make_unique<JoinClause>();
+        join->left_table = stmt->table_name;
+        if (Peek().type != TokenType::IDENTIFIER) {
+            status = Status::IOError("Expected table name in JOIN");
+            return nullptr;
+        }
+        join->right_table = Consume().text;
+        join->type = JoinType::INNER;
+
+        if (!Expect(TokenType::ON, status, "Expected ON in JOIN")) return nullptr;
+
+        // Parse left_table.col = right_table.col
+        if (Peek().type != TokenType::IDENTIFIER) {
+            status = Status::IOError("Expected left column in JOIN ON");
+            return nullptr;
+        }
+        join->left_column = Consume().text;
+        for (auto & c: join->left_column) c = std::toupper(c);
+
+        if (!Expect(TokenType::EQUAL, status, "Expected = in JOIN ON")) return nullptr;
+
+        if (Peek().type != TokenType::IDENTIFIER) {
+            status = Status::IOError("Expected right column in JOIN ON");
+            return nullptr;
+        }
+        join->right_column = Consume().text;
+        for (auto & c: join->right_column) c = std::toupper(c);
+
+        stmt->join = std::move(join);
+    }
+
     stmt->where = ParseWhere(status);
     return stmt;
 }
@@ -193,6 +228,35 @@ std::unique_ptr<Statement> Parser::ParseDelete(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    stmt->where = ParseWhere(status);
+    return stmt;
+}
+
+std::unique_ptr<Statement> Parser::ParseUpdate(Status& status) {
+    auto stmt = std::make_unique<UpdateStatement>();
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected table name in UPDATE");
+        return nullptr;
+    }
+    stmt->table_name = Consume().text;
+
+    if (!Expect(TokenType::SET, status, "Expected SET after table name")) return nullptr;
+
+    if (Peek().type != TokenType::IDENTIFIER) {
+        status = Status::IOError("Expected column name in SET");
+        return nullptr;
+    }
+    stmt->column_name = Consume().text;
+    for (auto & c: stmt->column_name) c = std::toupper(c);
+
+    if (!Expect(TokenType::EQUAL, status, "Expected = in SET")) return nullptr;
+
+    if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
+        status = Status::IOError("Expected new value in SET");
+        return nullptr;
+    }
+    stmt->new_value = Consume().text;
+
     stmt->where = ParseWhere(status);
     return stmt;
 }

@@ -54,9 +54,15 @@ Follow the established five-layer separation of concerns:
    - Disk-friendly B-Tree implementation for ordered indexing.
    - Support for range queries (`>`, `<`, etc.).
    - Persistent index structure (on-disk nodes).
-7. **Milestone 13: Slotted Pages:**
+7. **Milestone 13: Slotted Pages:** [COMPLETED]
    - Advanced page layout with slot directories.
    - Improved space management and row deletion reclamation.
+8. **Milestone 14: UPDATE & Nested Loop Join:**
+   - Support for modifying existing records via `UPDATE`.
+   - Fundamental relational `JOIN` support (Nested Loop).
+   - Multi-table query execution infrastructure.
+9. **Milestone 15: Future Enhancements (Future):**
+   - Transactions (ACID), Write-Ahead Logging (WAL).
 
 ---
 

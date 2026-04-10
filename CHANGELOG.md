@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-14] - 2026-04-10
+### Added
+- **UPDATE Statement**: Support for modifying existing records via `UPDATE table SET col = val WHERE condition`.
+- **Nested Loop Join**: Implemented relational joining between two tables using a simple nested loop algorithm.
+- **Parser Support**: Updated SQL grammar to handle `UPDATE`, `SET`, and `JOIN ... ON ...` syntax.
+- **Relational Capabilities**: Enabled multi-table querying and data modification, further expanding Mini DB's SQL coverage.
+- **Robustness**: All 100+ tests passing, including new DML and relational logic.
+
 ## [0.1.0-milestone-13] - 2026-04-10
 ### Added
 - **Slotted Page Storage**: Implemented a professional slot-directory page layout.

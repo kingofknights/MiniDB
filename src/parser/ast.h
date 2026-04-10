@@ -11,7 +11,8 @@ enum class StatementType {
     INSERT,
     SELECT,
     DELETE,
-    CREATE_INDEX
+    CREATE_INDEX,
+    UPDATE
 };
 
 struct Statement {
@@ -45,9 +46,22 @@ struct WhereClause {
     std::string value; // raw string value
 };
 
+enum class JoinType {
+    INNER
+};
+
+struct JoinClause {
+    std::string left_table;
+    std::string right_table;
+    std::string left_column;
+    std::string right_column;
+    JoinType type;
+};
+
 struct SelectStatement : public Statement {
     std::string table_name;
     std::unique_ptr<WhereClause> where;
+    std::unique_ptr<JoinClause> join;
     StatementType GetType() const override { return StatementType::SELECT; }
 };
 
@@ -55,6 +69,14 @@ struct DeleteStatement : public Statement {
     std::string table_name;
     std::unique_ptr<WhereClause> where;
     StatementType GetType() const override { return StatementType::DELETE; }
+};
+
+struct UpdateStatement : public Statement {
+    std::string table_name;
+    std::string column_name;
+    std::string new_value;
+    std::unique_ptr<WhereClause> where;
+    StatementType GetType() const override { return StatementType::UPDATE; }
 };
 
 struct CreateIndexStatement : public Statement {

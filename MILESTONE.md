@@ -86,10 +86,17 @@
 - [ ] Integrate B-Tree into Executor for range scans.
 
 ## Milestone 13: Slotted Pages
-- [ ] Redesign Page layout to use a Slot Directory.
-- [ ] Implement free space management within pages.
-- [ ] Support true row deletion and space reclamation.
-- [ ] Update TableHeap to use slotted page offsets.
+- [x] Redesign Page layout to use a Slot Directory.
+- [x] Implement free space management within pages.
+- [x] Support true row deletion and space reclamation.
+- [x] Update TableHeap to use slotted page offsets.
+
+## Milestone 14: UPDATE & Nested Loop Join
+- [ ] Support `UPDATE table SET col = val WHERE condition`.
+- [ ] Implement `UPDATE` execution logic (in-place if possible, or delete+insert).
+- [ ] Support `SELECT * FROM t1 JOIN t2 ON t1.c1 = t2.c2` syntax.
+- [ ] Implement a basic Nested Loop Join algorithm.
+- [ ] Add functional tests for updates and joins.
 
 ## Stretch
 - [ ] single-column index
