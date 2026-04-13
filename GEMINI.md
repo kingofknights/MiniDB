@@ -76,6 +76,7 @@ Follow the established five-layer separation of concerns:
 - **Incremental Progress:** Commit changes milestone-by-milestone. Each milestone MUST be tagged in Git (e.g., `v0.1.0-milestone-1`).
 - **Documentation:** Everything must be documented. Maintain inline code comments, `ARCHITECTURE.md`, and this `GEMINI.md`.
 - **Changelog:** Always update `CHANGELOG.md` for every notable change or milestone completion.
+- **README:** Maintain a detailed `README.md` that reflects the current state of the project, including features, build instructions, and example usage. Update it whenever a new feature is added or architectural changes occur.
 
 ---
 
