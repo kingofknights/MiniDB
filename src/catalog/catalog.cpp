@@ -88,15 +88,17 @@ std::unique_ptr<Catalog> Catalog::Deserialize(const uint8_t* buffer) {
     return catalog;
 }
 
-void Catalog::AddIndex(std::string name, std::string table_name, std::string column_name, IndexType type) {
+void Catalog::AddIndex(std::string name, std::string table_name, std::vector<std::string> column_names, IndexType type) {
     for (auto & c: name) c = std::toupper(c);
     for (auto & c: table_name) c = std::toupper(c);
-    for (auto & c: column_name) c = std::toupper(c);
+    for (auto & col : column_names) {
+        for (auto & c : col) c = std::toupper(c);
+    }
     
     if (type == IndexType::HASH) {
-        hash_indexes_[table_name].push_back(std::make_unique<HashIndex>(name, table_name, column_name));
+        hash_indexes_[table_name].push_back(std::make_unique<HashIndex>(name, table_name, column_names));
     } else {
-        btree_indexes_[table_name].push_back(std::make_unique<BTreeIndex>(name, table_name, column_name));
+        btree_indexes_[table_name].push_back(std::make_unique<BTreeIndex>(name, table_name, column_names));
     }
 }
 

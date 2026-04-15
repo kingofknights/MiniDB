@@ -67,7 +67,7 @@ void RunBenchmark() {
         CreateIndexStatement idx;
         idx.index_name = "IDX_ID";
         idx.table_name = "DATA";
-        idx.column_name = "ID";
+        idx.column_names = {"ID"};
         executor.Execute(idx);
     }
 

@@ -204,7 +204,8 @@ TEST_F(ExtensiveParserTest, ParseCreateIndex) {
     auto idx = static_cast<CreateIndexStatement*>(stmt.get());
     EXPECT_EQ(idx->index_name, "IDX");
     EXPECT_EQ(idx->table_name, "T1");
-    EXPECT_EQ(idx->column_name, "COL");
+    ASSERT_EQ(idx->column_names.size(), 1);
+    EXPECT_EQ(idx->column_names[0], "COL");
 }
 
 TEST_F(ExtensiveParserTest, ParseInvalidStatement) {

@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-17] - 2026-04-10
+### Added
+- **Multi-column Indexes**: Supported `CREATE INDEX idx ON table (col1, col2, ...)` for composite keys.
+- **Index Enhancements**: Updated `HashIndex` and `BTreeIndex` to handle vectors of `Value` objects with delimiter-based key serialization.
+- **Parser Support**: Expanded SQL grammar to accept comma-separated column lists in index creation.
+- **Execution Logic**: Refactored `Executor` to populate and maintain multi-column indexes during `INSERT` and `CREATE INDEX` operations.
+- **Verification**: All 100+ tests passing, including fixes for benchmarking and extensive regression suites.
+
 ## [0.1.0-milestone-16] - 2026-04-10
 ### Added
 - **Aggregations**: Supported `COUNT()`, `SUM()`, `AVG()`, `MIN()`, and `MAX()` functions in `SELECT` statements.

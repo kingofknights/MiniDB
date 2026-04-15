@@ -64,10 +64,11 @@ TEST_F(ExtensiveExecutionTest, CatalogGetNonExistentTable) {
 TEST_F(ExtensiveExecutionTest, CatalogIndexStorage) {
     Catalog catalog;
     catalog.CreateTable("T1", Schema({{"C1", DataType::INT}}));
-    catalog.AddIndex("IDX1", "T1", "C1", IndexType::HASH);
+    catalog.AddIndex("IDX1", "T1", {"C1"}, IndexType::HASH);
     auto idxs = catalog.GetHashIndexes("T1");
     ASSERT_EQ(idxs.size(), 1);
-    EXPECT_EQ(idxs[0]->GetColumnName(), "C1");
+    ASSERT_EQ(idxs[0]->GetColumnNames().size(), 1);
+    EXPECT_EQ(idxs[0]->GetColumnNames()[0], "C1");
 }
 
 // --- EXECUTOR & INDEX TESTS ---

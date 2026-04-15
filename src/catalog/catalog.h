@@ -35,7 +35,7 @@ public:
         return *tables_.at(name);
     }
 
-    void AddIndex(std::string name, std::string table_name, std::string column_name, IndexType type = IndexType::HASH);
+    void AddIndex(std::string name, std::string table_name, std::vector<std::string> column_names, IndexType type = IndexType::HASH);
     std::vector<HashIndex*> GetHashIndexes(std::string table_name);
     std::vector<BTreeIndex*> GetBTreeIndexes(std::string table_name);
 

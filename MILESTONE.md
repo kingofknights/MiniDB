@@ -1,47 +1,47 @@
 # Milestone Checklist
 
 ## Milestone 1: Scaffold
-- [ ] create CMake project
-- [ ] set C++ standard to 17 or newer
-- [ ] add test framework
-- [ ] create source tree
-- [ ] compile hello-world main
+- [x] create CMake project
+- [x] set C++ standard to 17 or newer
+- [x] add test framework
+- [x] create source tree
+- [x] compile hello-world main
 
 ## Milestone 2: Pager
-- [ ] define page size
-- [ ] implement Page class
-- [ ] implement Pager open/read/write/allocate
-- [ ] add page I/O tests
+- [x] define page size
+- [x] implement Page class
+- [x] implement Pager open/read/write/allocate
+- [x] add page I/O tests
 
 ## Milestone 3: Schema + Records
-- [ ] define Column type
-- [ ] define Schema type
-- [ ] implement row serializer
-- [ ] implement row deserializer
-- [ ] add round-trip tests
+- [x] define Column type
+- [x] define Schema type
+- [x] implement row serializer
+- [x] implement row deserializer
+- [x] add round-trip tests
 
 ## Milestone 4: Table Heap
-- [ ] append rows
-- [ ] scan rows
-- [ ] support delete marker
-- [ ] add persistence tests
+- [x] append rows
+- [x] scan rows
+- [x] support delete marker
+- [x] add persistence tests
 
 ## Milestone 5: Parser
-- [ ] implement lexer
-- [ ] implement AST
-- [ ] parse CREATE TABLE
-- [ ] parse INSERT
-- [ ] parse SELECT
-- [ ] parse DELETE
-- [ ] add parser tests
+- [x] implement lexer
+- [x] implement AST
+- [x] parse CREATE TABLE
+- [x] parse INSERT
+- [x] parse SELECT
+- [x] parse DELETE
+- [x] add parser tests
 
 ## Milestone 6: Execution
-- [ ] wire AST to executor
-- [ ] create tables through catalog
-- [ ] insert rows through table heap
-- [ ] select rows through scan
-- [ ] delete rows
-- [ ] add end-to-end tests
+- [x] wire AST to executor
+- [x] create tables through catalog
+- [x] insert rows through table heap
+- [x] select rows through scan
+- [x] delete rows
+- [x] add end-to-end tests
 
 ## Milestone 7: REPL
 - [x] implement prompt loop
@@ -79,11 +79,11 @@
 - [x] Add network integration tests.
 
 ## Milestone 12: B-Tree Indexes
-- [ ] Implement B-Tree node structure (Internal vs Leaf nodes).
-- [ ] Support range query operators in Parser (`>`, `<`, `>=`, `<=`).
-- [ ] Implement B-Tree Insert and Search logic.
-- [ ] Support node splitting and rebalancing.
-- [ ] Integrate B-Tree into Executor for range scans.
+- [x] Implement B-Tree node structure (Internal vs Leaf nodes).
+- [x] Support range query operators in Parser (`>`, `<`, `>=`, `<=`).
+- [x] Implement B-Tree Insert and Search logic.
+- [x] Support node splitting and rebalancing.
+- [x] Integrate B-Tree into Executor for range scans.
 
 ## Milestone 13: Slotted Pages
 - [x] Redesign Page layout to use a Slot Directory.
@@ -99,18 +99,23 @@
 - [x] Add functional tests for updates and joins.
 
 ## Milestone 15: Transactions & WAL
-- [ ] Support `BEGIN`, `COMMIT`, and `ROLLBACK` in Parser.
-- [ ] Implement a Log Manager for Write-Ahead Logging (WAL).
-- [ ] Implement Atomicity: ensure multi-statement changes are all-or-nothing.
-- [ ] Support simple crash recovery by replaying the log on startup.
+- [x] Support `BEGIN`, `COMMIT`, and `ROLLBACK` in Parser.
+- [x] Implement a Log Manager for Write-Ahead Logging (WAL).
+- [x] Implement Atomicity: ensure multi-statement changes are all-or-nothing.
+- [x] Support simple crash recovery by replaying the log on startup.
 
 ## Milestone 16: Aggregations & Group By
-- [ ] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()` in Parser.
-- [ ] Support `GROUP BY` syntax and basic grouping logic.
-- [ ] Implement aggregation execution in the query engine.
-- [ ] Add analytical tests for summary queries.
+- [x] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()` in Parser.
+- [x] Support `GROUP BY` syntax and basic grouping logic.
+- [x] Implement aggregation execution in the query engine.
+- [x] Add analytical tests for summary queries.
+
+## Milestone 17: Multi-column Indexes
+- [ ] Update Parser to support `CREATE INDEX idx ON table (col1, col2, ...)`.
+- [ ] Extend `HashIndex` and `BTreeIndex` to support composite keys.
+- [ ] Update index maintenance logic for multi-column updates.
+- [ ] Integrate multi-column lookup in the Executor.
 
 ## Stretch
-- [ ] single-column index
 - [ ] benchmark script
 - [ ] better error reporting

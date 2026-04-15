@@ -98,7 +98,7 @@ struct UpdateStatement : public Statement {
 struct CreateIndexStatement : public Statement {
     std::string index_name;
     std::string table_name;
-    std::string column_name;
+    std::vector<std::string> column_names;
     StatementType GetType() const override { return StatementType::CREATE_INDEX; }
 };
 

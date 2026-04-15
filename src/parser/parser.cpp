@@ -98,11 +98,25 @@ std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
     }
     stmt->table_name = Consume().text;
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
-    if (Peek().type != TokenType::IDENTIFIER) {
-        status = Status::IOError("Expected column name");
+    
+    bool first = true;
+    while (Peek().type != TokenType::RPAREN) {
+        if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
+        first = false;
+        if (Peek().type != TokenType::IDENTIFIER) {
+            status = Status::IOError("Expected column name");
+            return nullptr;
+        }
+        std::string col = Consume().text;
+        for (auto & c: col) c = std::toupper(c);
+        stmt->column_names.push_back(col);
+    }
+    
+    if (stmt->column_names.empty()) {
+        status = Status::IOError("Index must have at least one column");
         return nullptr;
     }
-    stmt->column_name = Consume().text;
+
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
     return stmt;
 }

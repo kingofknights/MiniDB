@@ -104,21 +104,29 @@ Status Executor::ExecuteInsert(const InsertStatement& stmt, std::ostream& out) {
     if (s.ok()) {
         auto h_indexes = catalog_.GetHashIndexes(stmt.table_name);
         for (auto* idx : h_indexes) {
-            for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
-                if (schema.GetColumn(i).GetName() == idx->GetColumnName()) {
-                    idx->Insert(rec.GetValue(i), rec);
-                    break;
+            std::vector<Value> keys;
+            for (const auto& col_name : idx->GetColumnNames()) {
+                for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+                    if (schema.GetColumn(i).GetName() == col_name) {
+                        keys.push_back(rec.GetValue(i));
+                        break;
+                    }
                 }
             }
+            if (keys.size() == idx->GetColumnNames().size()) idx->Insert(keys, rec);
         }
         auto b_indexes = catalog_.GetBTreeIndexes(stmt.table_name);
         for (auto* idx : b_indexes) {
-            for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
-                if (schema.GetColumn(i).GetName() == idx->GetColumnName()) {
-                    idx->Insert(rec.GetValue(i), rec);
-                    break;
+            std::vector<Value> keys;
+            for (const auto& col_name : idx->GetColumnNames()) {
+                for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+                    if (schema.GetColumn(i).GetName() == col_name) {
+                        keys.push_back(rec.GetValue(i));
+                        break;
+                    }
                 }
             }
+            if (keys.size() == idx->GetColumnNames().size()) idx->Insert(keys, rec);
         }
         out << "1 row inserted" << std::endl;
     }
@@ -185,19 +193,24 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
     if (stmt.where) {
         auto b_indexes = catalog_.GetBTreeIndexes(stmt.table_name);
         for (auto* idx : b_indexes) {
-            if (idx->GetColumnName() == stmt.where->column_name) {
+            // Check if first column of index matches the WHERE column
+            if (!idx->GetColumnNames().empty() && idx->GetColumnNames()[0] == stmt.where->column_name) {
                 for (size_t i = 0; i < schema_left.GetColumnCount(); ++i) {
-                    if (schema_left.GetColumn(i).GetName() == idx->GetColumnName()) {
+                    if (schema_left.GetColumn(i).GetName() == stmt.where->column_name) {
                         Value key(0);
                         if (schema_left.GetColumn(i).GetType() == DataType::INT) key = Value(std::stoi(stmt.where->value));
                         else key = Value(stmt.where->value);
                         
+                        // For multi-column index, we'd ideally support partial keys. 
+                        // Our current B-Tree simulation can handle it if we adjust Lookup logic.
+                        // For now, just use single key lookup logic.
+                        std::vector<Value> keys = {key};
                         switch (stmt.where->op) {
-                            case OpType::EQUAL: records = idx->Lookup(key); break;
-                            case OpType::GREATER: records = idx->LookupGreater(key, false); break;
-                            case OpType::GREATER_EQUAL: records = idx->LookupGreater(key, true); break;
-                            case OpType::LESS: records = idx->LookupLess(key, false); break;
-                            case OpType::LESS_EQUAL: records = idx->LookupLess(key, true); break;
+                            case OpType::EQUAL: records = idx->Lookup(keys); break;
+                            case OpType::GREATER: records = idx->LookupGreater(keys, false); break;
+                            case OpType::GREATER_EQUAL: records = idx->LookupGreater(keys, true); break;
+                            case OpType::LESS: records = idx->LookupLess(keys, false); break;
+                            case OpType::LESS_EQUAL: records = idx->LookupLess(keys, true); break;
                         }
                         used_index = true;
                         break;
@@ -210,14 +223,14 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
         if (!used_index && stmt.where->op == OpType::EQUAL) {
             auto h_indexes = catalog_.GetHashIndexes(stmt.table_name);
             for (auto* idx : h_indexes) {
-                if (idx->GetColumnName() == stmt.where->column_name) {
+                if (!idx->GetColumnNames().empty() && idx->GetColumnNames()[0] == stmt.where->column_name) {
                     for (size_t i = 0; i < schema_left.GetColumnCount(); ++i) {
-                        if (schema_left.GetColumn(i).GetName() == idx->GetColumnName()) {
+                        if (schema_left.GetColumn(i).GetName() == idx->GetColumnNames()[0]) {
                             Value key(0);
                             if (schema_left.GetColumn(i).GetType() == DataType::INT) key = Value(std::stoi(stmt.where->value));
                             else key = Value(stmt.where->value);
                             
-                            records = idx->Lookup(key);
+                            records = idx->Lookup({key});
                             used_index = true;
                             break;
                         }
@@ -421,19 +434,21 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
     }
     const Schema& schema = catalog_.GetSchema(stmt.table_name);
     
-    bool col_found = false;
-    size_t col_idx = 0;
-    for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
-        if (schema.GetColumn(i).GetName() == stmt.column_name) {
-            col_found = true;
-            col_idx = i;
-            break;
+    std::vector<size_t> col_indices;
+    for (const auto& col_name : stmt.column_names) {
+        bool found = false;
+        for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+            if (schema.GetColumn(i).GetName() == col_name) {
+                col_indices.push_back(i);
+                found = true;
+                break;
+            }
         }
+        if (!found) return Status::IOError("Column not found: " + col_name);
     }
-    if (!col_found) return Status::IOError("Column not found: " + stmt.column_name);
 
     IndexType type = (stmt.index_name.find("HASH") != std::string::npos) ? IndexType::HASH : IndexType::BTREE;
-    catalog_.AddIndex(stmt.index_name, stmt.table_name, stmt.column_name, type);
+    catalog_.AddIndex(stmt.index_name, stmt.table_name, stmt.column_names, type);
     
     TableHeap table(pager_, schema);
     auto all_records = table.Scan();
@@ -441,11 +456,19 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
     if (type == IndexType::HASH) {
         auto idxs = catalog_.GetHashIndexes(stmt.table_name);
         auto* idx = idxs.back();
-        for (const auto& rec : all_records) idx->Insert(rec.GetValue(col_idx), rec);
+        for (const auto& rec : all_records) {
+            std::vector<Value> keys;
+            for (size_t ci : col_indices) keys.push_back(rec.GetValue(ci));
+            idx->Insert(keys, rec);
+        }
     } else {
         auto idxs = catalog_.GetBTreeIndexes(stmt.table_name);
         auto* idx = idxs.back();
-        for (const auto& rec : all_records) idx->Insert(rec.GetValue(col_idx), rec);
+        for (const auto& rec : all_records) {
+            std::vector<Value> keys;
+            for (size_t ci : col_indices) keys.push_back(rec.GetValue(ci));
+            idx->Insert(keys, rec);
+        }
     }
 
     out << "Index created: " << stmt.index_name << std::endl;
