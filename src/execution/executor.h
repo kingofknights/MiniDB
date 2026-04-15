@@ -23,6 +23,7 @@ private:
     Status ExecuteDelete(const DeleteStatement& stmt, std::ostream& out);
     Status ExecuteUpdate(const UpdateStatement& stmt, std::ostream& out);
     Status ExecuteTransaction(const TransactionStatement& stmt, std::ostream& out);
+    Status ExecuteExplain(const ExplainStatement& stmt, std::ostream& out);
     Status ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostream& out);
 
     Catalog& catalog_;

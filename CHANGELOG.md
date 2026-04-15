@@ -12,6 +12,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-20] - 2026-04-10
+### Added
+- **Query Plan Visualization**: Supported `EXPLAIN <query>` to display the internal execution strategy.
+- **Plan Transparency**: The `Executor` now reports whether it uses a B-Tree Index, Hash Index, Full Table Scan, or Nested Loop Join.
+- **Parser Update**: Integrated the `EXPLAIN` keyword into the SQL grammar.
+- **System Quality**: Verified with 100+ tests including plan reporting logic.
+
 ## [0.1.0-milestone-19] - 2026-04-10
 ### Added
 - **Crash Recovery**: Implemented `RecoveryManager` to replay the Write-Ahead Log (WAL) on startup.

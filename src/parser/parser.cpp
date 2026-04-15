@@ -3,6 +3,12 @@
 namespace minidb {
 
 std::unique_ptr<Statement> Parser::Parse(Status& status) {
+    if (Match(TokenType::EXPLAIN)) {
+        auto explain = std::make_unique<ExplainStatement>();
+        explain->stmt = Parse(status);
+        return explain;
+    }
+
     std::unique_ptr<Statement> stmt;
     if (Match(TokenType::CREATE)) {
         if (Peek().type == TokenType::INDEX) stmt = ParseCreateIndex(status);

@@ -14,6 +14,7 @@ static const std::unordered_map<std::string, TokenType> KEYWORDS = {
     {"COUNT", TokenType::COUNT}, {"SUM", TokenType::SUM}, {"AVG", TokenType::AVG},
     {"MIN", TokenType::MIN}, {"MAX", TokenType::MAX}, {"GROUP", TokenType::GROUP}, {"BY", TokenType::BY},
     {"FOREIGN", TokenType::FOREIGN}, {"KEY", TokenType::KEY}, {"REFERENCES", TokenType::REFERENCES},
+    {"EXPLAIN", TokenType::EXPLAIN},
     {"INT", TokenType::INT}, {"TEXT", TokenType::TEXT}
 };
 

@@ -13,7 +13,8 @@ enum class StatementType {
     DELETE,
     CREATE_INDEX,
     UPDATE,
-    TRANSACTION
+    TRANSACTION,
+    EXPLAIN
 };
 
 struct Statement {
@@ -107,6 +108,11 @@ struct CreateIndexStatement : public Statement {
     std::string table_name;
     std::vector<std::string> column_names;
     StatementType GetType() const override { return StatementType::CREATE_INDEX; }
+};
+
+struct ExplainStatement : public Statement {
+    std::unique_ptr<Statement> stmt;
+    StatementType GetType() const override { return StatementType::EXPLAIN; }
 };
 
 enum class TransactionType {

@@ -10,7 +10,7 @@ enum class TokenType {
     WHERE, INDEX, ON, UPDATE, SET, JOIN,
     BEGIN, COMMIT, ROLLBACK,
     COUNT, SUM, AVG, MIN, MAX, GROUP, BY,
-    FOREIGN, KEY, REFERENCES,
+    FOREIGN, KEY, REFERENCES, EXPLAIN,
     INT, TEXT,
     
     // Literals
