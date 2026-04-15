@@ -21,9 +21,16 @@ struct Statement {
     virtual StatementType GetType() const = 0;
 };
 
+struct ForeignKey {
+    std::string column_name;
+    std::string referenced_table;
+    std::string referenced_column;
+};
+
 struct CreateTableStatement : public Statement {
     std::string table_name;
     std::vector<Column> columns;
+    std::vector<ForeignKey> foreign_keys;
     StatementType GetType() const override { return StatementType::CREATE_TABLE; }
 };
 

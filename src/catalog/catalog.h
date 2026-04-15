@@ -39,6 +39,12 @@ public:
     std::vector<HashIndex*> GetHashIndexes(std::string table_name);
     std::vector<BTreeIndex*> GetBTreeIndexes(std::string table_name);
 
+    std::vector<std::string> GetTableNames() const {
+        std::vector<std::string> names;
+        for (const auto& [name, schema] : tables_) names.push_back(name);
+        return names;
+    }
+
     void Serialize(std::vector<uint8_t>& buffer) const;
     static std::unique_ptr<Catalog> Deserialize(const uint8_t* buffer);
 

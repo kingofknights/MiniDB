@@ -56,16 +56,53 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
+
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
     bool first = true;
     while (Peek().type != TokenType::RPAREN) {
         if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
         first = false;
+
+        if (Match(TokenType::FOREIGN)) {
+            if (!Expect(TokenType::KEY, status, "Expected KEY after FOREIGN")) return nullptr;
+            if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
+            if (Peek().type != TokenType::IDENTIFIER) {
+                status = Status::IOError("Expected column name in FOREIGN KEY");
+                return nullptr;
+            }
+            std::string col = Consume().text;
+            for (auto & c: col) c = std::toupper(c);
+            if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
+
+            if (!Expect(TokenType::REFERENCES, status, "Expected REFERENCES")) return nullptr;
+            if (Peek().type != TokenType::IDENTIFIER) {
+                status = Status::IOError("Expected referenced table name");
+                return nullptr;
+            }
+            std::string ref_table = Consume().text;
+            for (auto & c: ref_table) c = std::toupper(c);
+
+            if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
+            if (Peek().type != TokenType::IDENTIFIER) {
+                status = Status::IOError("Expected referenced column name");
+                return nullptr;
+            }
+            std::string ref_col = Consume().text;
+            for (auto & c: ref_col) c = std::toupper(c);
+            if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
+
+            stmt->foreign_keys.push_back({col, ref_table, ref_col});
+            continue;
+        }
+
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected column name");
             return nullptr;
         }
         std::string col_name = Consume().text;
+        for (auto & c: col_name) c = std::toupper(c);
+
         DataType type;
         if (Match(TokenType::INT)) type = DataType::INT;
         else if (Match(TokenType::TEXT)) type = DataType::TEXT;
@@ -91,14 +128,17 @@ std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
         return nullptr;
     }
     stmt->index_name = Consume().text;
+    for (auto & c: stmt->index_name) c = std::toupper(c);
+
     if (!Expect(TokenType::ON, status, "Expected ON")) return nullptr;
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected table name");
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
+
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
-    
     bool first = true;
     while (Peek().type != TokenType::RPAREN) {
         if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
@@ -111,12 +151,10 @@ std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
         for (auto & c: col) c = std::toupper(c);
         stmt->column_names.push_back(col);
     }
-    
     if (stmt->column_names.empty()) {
         status = Status::IOError("Index must have at least one column");
         return nullptr;
     }
-
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
     return stmt;
 }
@@ -129,6 +167,8 @@ std::unique_ptr<Statement> Parser::ParseInsert(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
+
     if (!Expect(TokenType::VALUES, status, "Expected VALUES")) return nullptr;
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
     bool first = true;
@@ -174,7 +214,6 @@ std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
 std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
     auto stmt = std::make_unique<SelectStatement>();
     if (Match(TokenType::STAR)) {
-        // All columns selected
     } else {
         bool first = true;
         while (true) {
@@ -212,6 +251,7 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
 
     if (Match(TokenType::JOIN)) {
         auto join = std::make_unique<JoinClause>();
@@ -221,6 +261,7 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
             return nullptr;
         }
         join->right_table = Consume().text;
+        for (auto & c: join->right_table) c = std::toupper(c);
         join->type = JoinType::INNER;
         if (!Expect(TokenType::ON, status, "Expected ON in JOIN")) return nullptr;
         if (Peek().type != TokenType::IDENTIFIER) {
@@ -261,6 +302,7 @@ std::unique_ptr<Statement> Parser::ParseDelete(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
     stmt->where = ParseWhere(status);
     return stmt;
 }
@@ -272,6 +314,7 @@ std::unique_ptr<Statement> Parser::ParseUpdate(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
+    for (auto & c: stmt->table_name) c = std::toupper(c);
     if (!Expect(TokenType::SET, status, "Expected SET after table name")) return nullptr;
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected column name in SET");

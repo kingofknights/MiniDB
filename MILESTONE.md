@@ -111,10 +111,17 @@
 - [x] Add analytical tests for summary queries.
 
 ## Milestone 17: Multi-column Indexes
-- [ ] Update Parser to support `CREATE INDEX idx ON table (col1, col2, ...)`.
-- [ ] Extend `HashIndex` and `BTreeIndex` to support composite keys.
-- [ ] Update index maintenance logic for multi-column updates.
-- [ ] Integrate multi-column lookup in the Executor.
+- [x] Update Parser to support `CREATE INDEX idx ON table (col1, col2, ...)`.
+- [x] Extend `HashIndex` and `BTreeIndex` to support composite keys.
+- [x] Update index maintenance logic for multi-column updates.
+- [x] Integrate multi-column lookup in the Executor.
+
+## Milestone 18: Foreign Key Constraints
+- [ ] Support `FOREIGN KEY (col) REFERENCES other_table(other_col)` in Parser.
+- [ ] Store Foreign Key metadata in the Catalog.
+- [ ] Implement constraint validation during `INSERT` (check parent exists).
+- [ ] Implement constraint validation during `DELETE` (check no children exist).
+- [ ] Add functional tests for referential integrity.
 
 ## Stretch
 - [ ] benchmark script

@@ -48,6 +48,8 @@ Status Executor::Execute(const Statement& stmt, std::ostream& out) {
             return ExecuteUpdate(static_cast<const UpdateStatement&>(stmt), out);
         case StatementType::CREATE_INDEX:
             return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt), out);
+        case StatementType::TRANSACTION:
+            return ExecuteTransaction(static_cast<const TransactionStatement&>(stmt), out);
         default:
             return Status::IOError("Execution for this statement type is not yet implemented");
     }
@@ -57,7 +59,7 @@ Status Executor::ExecuteCreate(const CreateTableStatement& stmt, std::ostream& o
     if (catalog_.TableExists(stmt.table_name)) {
         return Status::IOError("Table already exists: " + stmt.table_name);
     }
-    catalog_.CreateTable(stmt.table_name, Schema(stmt.columns));
+    catalog_.CreateTable(stmt.table_name, Schema(stmt.columns, stmt.foreign_keys));
     
     std::vector<uint8_t> buffer;
     catalog_.Serialize(buffer);
@@ -91,6 +93,40 @@ Status Executor::ExecuteInsert(const InsertStatement& stmt, std::ostream& out) {
             values.emplace_back(std::stoi(stmt.raw_values[i]));
         } else {
             values.emplace_back(stmt.raw_values[i]);
+        }
+    }
+
+    // FK Check: Check if parent exists
+    for (const auto& fk : schema.GetForeignKeys()) {
+        Value val(0);
+        for (size_t i = 0; i < schema.GetColumnCount(); ++i) {
+            if (schema.GetColumn(i).GetName() == fk.column_name) {
+                val = values[i];
+                break;
+            }
+        }
+
+        const Schema& ref_schema = catalog_.GetSchema(fk.referenced_table);
+        TableHeap ref_table(pager_, ref_schema);
+        auto ref_records = ref_table.Scan();
+        bool found = false;
+        for (const auto& r : ref_records) {
+            for (size_t i = 0; i < ref_schema.GetColumnCount(); ++i) {
+                if (ref_schema.GetColumn(i).GetName() == fk.referenced_column) {
+                    const auto& rv = r.GetValue(i);
+                    if (rv.GetType() == DataType::INT && val.GetType() == DataType::INT) {
+                        if (rv.AsInt() == val.AsInt()) found = true;
+                    } else if (rv.AsString() == val.AsString()) found = true;
+                    break;
+                }
+            }
+            if (found) break;
+        }
+        if (!found) {
+            out << "FK Check Failed: " << fk.column_name << " value=" 
+                << (val.GetType() == DataType::INT ? std::to_string(val.AsInt()) : val.AsString()) 
+                << " searching in " << fk.referenced_table << "." << fk.referenced_column << std::endl;
+            return Status::IOError("Foreign Key constraint violation: parent key not found in " + fk.referenced_table);
         }
     }
 
@@ -193,7 +229,6 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
     if (stmt.where) {
         auto b_indexes = catalog_.GetBTreeIndexes(stmt.table_name);
         for (auto* idx : b_indexes) {
-            // Check if first column of index matches the WHERE column
             if (!idx->GetColumnNames().empty() && idx->GetColumnNames()[0] == stmt.where->column_name) {
                 for (size_t i = 0; i < schema_left.GetColumnCount(); ++i) {
                     if (schema_left.GetColumn(i).GetName() == stmt.where->column_name) {
@@ -201,9 +236,6 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
                         if (schema_left.GetColumn(i).GetType() == DataType::INT) key = Value(std::stoi(stmt.where->value));
                         else key = Value(stmt.where->value);
                         
-                        // For multi-column index, we'd ideally support partial keys. 
-                        // Our current B-Tree simulation can handle it if we adjust Lookup logic.
-                        // For now, just use single key lookup logic.
                         std::vector<Value> keys = {key};
                         switch (stmt.where->op) {
                             case OpType::EQUAL: records = idx->Lookup(keys); break;
@@ -344,6 +376,20 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
     const Schema& schema = catalog_.GetSchema(stmt.table_name);
     TableHeap table(pager_, schema);
 
+    struct DependentFK {
+        std::string table_name;
+        ForeignKey fk;
+    };
+    std::vector<DependentFK> dependents;
+    for (const auto& t_name : catalog_.GetTableNames()) {
+        const auto& s = catalog_.GetSchema(t_name);
+        for (const auto& fk : s.GetForeignKeys()) {
+            if (fk.referenced_table == stmt.table_name) {
+                dependents.push_back({t_name, fk});
+            }
+        }
+    }
+
     uint32_t deleted_count = 0;
     Page page;
     for (PageID i = 1; i < pager_.GetPageCount(); ++i) {
@@ -358,6 +404,31 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
                 size_t bytes_read = 0;
                 Record rec = Record::Deserialize(schema, page.GetData() + slot->offset, bytes_read);
                 if (Matches(rec, schema, stmt.where.get())) {
+                    for (const auto& dep : dependents) {
+                        const auto& dep_schema = catalog_.GetSchema(dep.table_name);
+                        TableHeap dep_table(pager_, dep_schema);
+                        auto dep_records = dep_table.Scan();
+                        Value parent_val(0);
+                        for (size_t c = 0; c < schema.GetColumnCount(); ++c) {
+                            if (schema.GetColumn(c).GetName() == dep.fk.referenced_column) {
+                                parent_val = rec.GetValue(c);
+                                break;
+                            }
+                        }
+                        for (const auto& dr : dep_records) {
+                            for (size_t c = 0; c < dep_schema.GetColumnCount(); ++c) {
+                                if (dep_schema.GetColumn(c).GetName() == dep.fk.column_name) {
+                                    const auto& dv = dr.GetValue(c);
+                                    bool match = false;
+                                    if (dv.GetType() == DataType::INT && parent_val.GetType() == DataType::INT)
+                                        match = (dv.AsInt() == parent_val.AsInt());
+                                    else
+                                        match = (dv.AsString() == parent_val.AsString());
+                                    if (match) return Status::IOError("Foreign Key constraint violation: dependent records exist in " + dep.table_name);
+                                }
+                            }
+                        }
+                    }
                     log_manager_.AppendLog(LogRecordType::DELETE, stmt.table_name, Record::Serialize(schema, rec), {});
                     slot->deleted = true;
                     page_modified = true;
@@ -365,13 +436,11 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
                 }
             }
         }
-
         if (page_modified) {
             Status s = table.UpdatePage(i, page);
             if (!s.ok()) return s;
         }
     }
-
     out << deleted_count << " rows deleted" << std::endl;
     return Status::OK();
 }
@@ -417,13 +486,11 @@ Status Executor::ExecuteUpdate(const UpdateStatement& stmt, std::ostream& out) {
                 }
             }
         }
-
         if (page_modified) {
             Status s = table.UpdatePage(i, page);
             if (!s.ok()) return s;
         }
     }
-
     out << updated_count << " rows updated" << std::endl;
     return Status::OK();
 }
@@ -433,7 +500,6 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
         return Status::IOError("Table not found: " + stmt.table_name);
     }
     const Schema& schema = catalog_.GetSchema(stmt.table_name);
-    
     std::vector<size_t> col_indices;
     for (const auto& col_name : stmt.column_names) {
         bool found = false;
@@ -446,13 +512,10 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
         }
         if (!found) return Status::IOError("Column not found: " + col_name);
     }
-
     IndexType type = (stmt.index_name.find("HASH") != std::string::npos) ? IndexType::HASH : IndexType::BTREE;
     catalog_.AddIndex(stmt.index_name, stmt.table_name, stmt.column_names, type);
-    
     TableHeap table(pager_, schema);
     auto all_records = table.Scan();
-
     if (type == IndexType::HASH) {
         auto idxs = catalog_.GetHashIndexes(stmt.table_name);
         auto* idx = idxs.back();
@@ -470,7 +533,6 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
             idx->Insert(keys, rec);
         }
     }
-
     out << "Index created: " << stmt.index_name << std::endl;
     return Status::OK();
 }

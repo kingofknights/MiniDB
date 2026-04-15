@@ -61,11 +61,16 @@ Follow the established five-layer separation of concerns:
    - Support for modifying existing records via `UPDATE`.
    - Fundamental relational `JOIN` support (Nested Loop).
    - Multi-table query execution infrastructure.
-9. **Milestone 15: Transactions & WAL:**
+9. **Milestone 15: Transactions & WAL:** [COMPLETED]
    - Atomicity and Durability via Write-Ahead Logging.
    - Transaction control statements: `BEGIN`, `COMMIT`, `ROLLBACK`.
-10. **Milestone 16: Aggregations:**
+10. **Milestone 16: Aggregations:** [COMPLETED]
     - Analytical queries: `COUNT`, `SUM`, `AVG`, `GROUP BY`.
+11. **Milestone 17: Multi-column Indexes:** [COMPLETED]
+    - Support for composite keys in Hash and B-Tree indexes.
+12. **Milestone 18: Foreign Key Constraints:**
+    - Basic referential integrity between tables.
+    - Constraint validation during `INSERT` and `DELETE`.
 
 ---
 

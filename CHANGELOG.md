@@ -12,6 +12,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-18] - 2026-04-10
+### Added
+- **Foreign Key Constraints**: Supported `FOREIGN KEY (col) REFERENCES parent_table(parent_col)` in `CREATE TABLE`.
+- **Referential Integrity**: Implemented runtime validation to ensure parent records exist before inserting child records.
+- **Dependency Protection**: Added checks to prevent deletion of parent records that are referenced by existing child records.
+- **Catalog Enhancements**: Updated `Schema` and `Catalog` to persist foreign key metadata across restarts.
+- **Parser/Lexer Updates**: Added `FOREIGN`, `KEY`, and `REFERENCES` tokens and grammar rules.
+- **Verification**: Verified with comprehensive integration tests for valid and invalid referential operations.
+
 ## [0.1.0-milestone-17] - 2026-04-10
 ### Added
 - **Multi-column Indexes**: Supported `CREATE INDEX idx ON table (col1, col2, ...)` for composite keys.

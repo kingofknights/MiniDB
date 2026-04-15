@@ -144,6 +144,15 @@ Do not implement unless specifically requested:
 - Grouping logic via `GROUP BY`.
 - Analytical query processing.
 
+### Milestone 17: Multi-column Indexes
+- Update index management for composite keys.
+- Support multi-column lookup in the executor.
+
+### Milestone 18: Foreign Key Constraints
+- Implement `FOREIGN KEY` syntax in table creation.
+- Enforce referential integrity during data modification.
+- Ensure cross-table data consistency.
+
 ## Deliverable expectations
 For each milestone:
 - code

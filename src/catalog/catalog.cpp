@@ -38,6 +38,22 @@ void Schema::Serialize(std::vector<uint8_t>& buffer) const {
     for (const auto& col : columns_) {
         col.Serialize(buffer);
     }
+
+    // Serialize Foreign Keys
+    uint32_t fk_count = static_cast<uint32_t>(foreign_keys_.size());
+    uint8_t fk_count_bytes[4];
+    std::memcpy(fk_count_bytes, &fk_count, 4);
+    buffer.insert(buffer.end(), fk_count_bytes, fk_count_bytes + 4);
+
+    for (const auto& fk : foreign_keys_) {
+        for (const auto& s : {fk.column_name, fk.referenced_table, fk.referenced_column}) {
+            uint32_t len = s.length();
+            uint8_t len_bytes[4];
+            std::memcpy(len_bytes, &len, 4);
+            buffer.insert(buffer.end(), len_bytes, len_bytes + 4);
+            buffer.insert(buffer.end(), s.begin(), s.end());
+        }
+    }
 }
 
 Schema Schema::Deserialize(const uint8_t* buffer, size_t& offset) {
@@ -49,7 +65,26 @@ Schema Schema::Deserialize(const uint8_t* buffer, size_t& offset) {
     for (uint32_t i = 0; i < col_count; ++i) {
         columns.push_back(Column::Deserialize(buffer, offset));
     }
-    return Schema(std::move(columns));
+
+    // Deserialize Foreign Keys
+    uint32_t fk_count;
+    std::memcpy(&fk_count, buffer + offset, 4);
+    offset += 4;
+
+    std::vector<ForeignKey> fks;
+    for (uint32_t i = 0; i < fk_count; ++i) {
+        std::string fields[3];
+        for (int j = 0; j < 3; ++j) {
+            uint32_t len;
+            std::memcpy(&len, buffer + offset, 4);
+            offset += 4;
+            fields[j] = std::string(reinterpret_cast<const char*>(buffer + offset), len);
+            offset += len;
+        }
+        fks.push_back({fields[0], fields[1], fields[2]});
+    }
+
+    return Schema(std::move(columns), std::move(fks));
 }
 
 void Catalog::Serialize(std::vector<uint8_t>& buffer) const {
