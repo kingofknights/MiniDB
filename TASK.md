@@ -153,6 +153,19 @@ Do not implement unless specifically requested:
 - Enforce referential integrity during data modification.
 - Ensure cross-table data consistency.
 
+### Milestone 19: Crash Recovery
+- Replay WAL on startup to ensure Durability.
+- Undo uncommitted transactions and Redo committed ones.
+- Guarantee database integrity after a crash.
+
+### Milestone 20: EXPLAIN Plan
+- Visualize query execution strategy.
+- Show index usage vs full table scans.
+
+### Milestone 21: Concurrency Control
+- Implement a Lock Manager for isolation.
+- Support multiple simultaneous client connections.
+
 ## Deliverable expectations
 For each milestone:
 - code

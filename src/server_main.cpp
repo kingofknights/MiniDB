@@ -1,4 +1,5 @@
 #include "src/network/server.h"
+#include "src/storage/recovery_manager.h"
 #include <iostream>
 
 using namespace minidb;
@@ -25,6 +26,13 @@ int main(int argc, char* argv[]) {
     }
 
     LogManager log_manager("minidb_remote.log");
+
+    // Run Recovery
+    {
+        RecoveryManager rm(log_manager, *catalog, *pager);
+        rm.Recover();
+    }
+
     Server server(*catalog, *pager, log_manager, port);
     server.Start();
 

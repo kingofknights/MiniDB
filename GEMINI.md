@@ -68,9 +68,16 @@ Follow the established five-layer separation of concerns:
     - Analytical queries: `COUNT`, `SUM`, `AVG`, `GROUP BY`.
 11. **Milestone 17: Multi-column Indexes:** [COMPLETED]
     - Support for composite keys in Hash and B-Tree indexes.
-12. **Milestone 18: Foreign Key Constraints:**
+12. **Milestone 18: Foreign Key Constraints:** [COMPLETED]
     - Basic referential integrity between tables.
     - Constraint validation during `INSERT` and `DELETE`.
+13. **Milestone 19: Crash Recovery:**
+    - Replay WAL on startup to ensure Durability.
+    - Redo committed and Undo uncommitted transactions.
+14. **Milestone 20: EXPLAIN Plan:**
+    - Visualize query execution strategy and index usage.
+15. **Milestone 21: Concurrency Control:**
+    - Implementation of a Lock Manager for multi-client safety.
 
 ---
 

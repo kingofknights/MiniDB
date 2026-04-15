@@ -30,6 +30,44 @@ public:
         log_stream_.open(filename_, std::ios::out | std::ios::app | std::ios::binary);
     }
 
+    // ... AppendLog ...
+
+    std::vector<LogRecord> ReadAllLogs() {
+        std::vector<LogRecord> records;
+        std::ifstream in(filename_, std::ios::in | std::ios::binary);
+        if (!in.is_open()) return records;
+
+        while (in.peek() != EOF) {
+            LogRecord rec;
+            in.read(reinterpret_cast<char*>(&rec.lsn), 4);
+            uint8_t t;
+            in.read(reinterpret_cast<char*>(&t), 1);
+            rec.type = static_cast<LogRecordType>(t);
+
+            uint32_t name_len;
+            in.read(reinterpret_cast<char*>(&name_len), 4);
+            std::vector<char> name_buf(name_len);
+            in.read(name_buf.data(), name_len);
+            rec.table_name = std::string(name_buf.begin(), name_buf.end());
+
+            uint32_t before_len;
+            in.read(reinterpret_cast<char*>(&before_len), 4);
+            if (before_len > 0) {
+                rec.before_image.resize(before_len);
+                in.read(reinterpret_cast<char*>(rec.before_image.data()), before_len);
+            }
+
+            uint32_t after_len;
+            in.read(reinterpret_cast<char*>(&after_len), 4);
+            if (after_len > 0) {
+                rec.after_image.resize(after_len);
+                in.read(reinterpret_cast<char*>(rec.after_image.data()), after_len);
+            }
+            records.push_back(std::move(rec));
+        }
+        return records;
+    }
+
     uint32_t AppendLog(LogRecordType type, const std::string& table_name = "", 
                        const std::vector<uint8_t>& before = {}, 
                        const std::vector<uint8_t>& after = {}) {

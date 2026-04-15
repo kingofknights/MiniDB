@@ -117,11 +117,28 @@
 - [x] Integrate multi-column lookup in the Executor.
 
 ## Milestone 18: Foreign Key Constraints
-- [ ] Support `FOREIGN KEY (col) REFERENCES other_table(other_col)` in Parser.
-- [ ] Store Foreign Key metadata in the Catalog.
-- [ ] Implement constraint validation during `INSERT` (check parent exists).
-- [ ] Implement constraint validation during `DELETE` (check no children exist).
-- [ ] Add functional tests for referential integrity.
+- [x] Support `FOREIGN KEY (col) REFERENCES other_table(other_col)` in Parser.
+- [x] Store Foreign Key metadata in the Catalog.
+- [x] Implement constraint validation during `INSERT` (check parent exists).
+- [x] Implement constraint validation during `DELETE` (check no children exist).
+- [x] Add functional tests for referential integrity.
+
+## Milestone 19: Crash Recovery
+- [ ] Implement log reading/iterating in `LogManager`.
+- [ ] Identify "Winner" vs "Loser" transactions from WAL.
+- [ ] Implement **Redo** logic to ensure committed changes are persistent.
+- [ ] Implement **Undo** logic to revert uncommitted changes on startup.
+- [ ] Integrate recovery into the startup sequence of REPL and Server.
+
+## Milestone 20: EXPLAIN Plan
+- [ ] Add `EXPLAIN` keyword to the Lexer and Parser.
+- [ ] Implement query plan visualization in the Executor.
+- [ ] Show whether an index (Hash/B-Tree) or full scan is being used.
+
+## Milestone 21: Concurrency Control
+- [ ] Implement a basic `LockManager`.
+- [ ] Support row-level or table-level locking.
+- [ ] Handle multiple concurrent clients in the `Server`.
 
 ## Stretch
 - [ ] benchmark script

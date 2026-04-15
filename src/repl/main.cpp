@@ -4,6 +4,7 @@
 #include "src/parser/lexer.h"
 #include "src/parser/parser.h"
 #include "src/execution/executor.h"
+#include "src/storage/recovery_manager.h"
 
 using namespace minidb;
 
@@ -41,6 +42,13 @@ int main(int argc, char* argv[]) {
     }
 
     LogManager log_manager("minidb.log");
+    
+    // Run Recovery
+    {
+        RecoveryManager rm(log_manager, *catalog, *pager);
+        rm.Recover();
+    }
+
     Executor executor(*catalog, *pager, log_manager);
 
     std::cout << "Welcome to MiniDB!" << std::endl;

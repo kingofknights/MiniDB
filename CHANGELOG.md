@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-19] - 2026-04-10
+### Added
+- **Crash Recovery**: Implemented `RecoveryManager` to replay the Write-Ahead Log (WAL) on startup.
+- **Log Iteration**: Added capabilities to `LogManager` to read and deserialize all log records from disk.
+- **Durability Guarantee**: The database now ensures committed changes are re-applied to data pages if a crash occurs before they were flushed.
+- **Startup Integration**: Updated REPL and Server to automatically perform a recovery pass before accepting new queries.
+- **System Stability**: Verified recovery flow with 100+ tests ensuring no regressions in core engine behavior.
+
 ## [0.1.0-milestone-18] - 2026-04-10
 ### Added
 - **Foreign Key Constraints**: Supported `FOREIGN KEY (col) REFERENCES parent_table(parent_col)` in `CREATE TABLE`.
