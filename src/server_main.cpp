@@ -24,7 +24,8 @@ int main(int argc, char* argv[]) {
         catalog = Catalog::Deserialize(p0.GetData());
     }
 
-    Server server(*catalog, *pager, port);
+    LogManager log_manager("minidb_remote.log");
+    Server server(*catalog, *pager, log_manager, port);
     server.Start();
 
     return 0;

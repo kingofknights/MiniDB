@@ -4,6 +4,7 @@
 #include "src/parser/parser.h"
 #include "src/common/status.h"
 #include "src/storage/index.h"
+#include "src/storage/log_manager.h"
 #include <filesystem>
 
 namespace minidb {
@@ -13,19 +14,22 @@ protected:
     void SetUp() override {
         test_db_ = "ext_exec_test.db";
         std::filesystem::remove(test_db_);
+        std::filesystem::remove("test.log");
     }
     void TearDown() override {
         std::filesystem::remove(test_db_);
+        std::filesystem::remove("test.log");
     }
 
     Status RunSQL(const std::string& sql, Catalog& catalog, Pager& pager) {
+        LogManager log_manager("test.log");
         Lexer lexer(sql);
         auto tokens = lexer.Tokenize();
         Parser parser(tokens);
         Status s = Status::OK();
         auto stmt = parser.Parse(s);
         if (!s.ok()) return s;
-        Executor executor(catalog, pager);
+        Executor executor(catalog, pager, log_manager);
         std::stringstream ss;
         return executor.Execute(*stmt, ss);
     }

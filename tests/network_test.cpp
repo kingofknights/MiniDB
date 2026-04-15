@@ -1,6 +1,7 @@
 #include <gtest/gtest.h>
 #include "src/network/server.h"
 #include "src/network/client.h"
+#include "src/storage/log_manager.h"
 #include <thread>
 #include <filesystem>
 
@@ -24,9 +25,10 @@ TEST_F(NetworkTest, EndToEndRemoteQuery) {
     auto pager = Pager::Open(test_db_, status);
     pager->AllocatePage();
     Catalog catalog;
+    LogManager log_manager("network_test.log");
 
     // Start server in a separate thread
-    Server server(catalog, *pager, port);
+    Server server(catalog, *pager, log_manager, port);
     std::thread server_thread([&server]() {
         server.Start();
     });
@@ -50,10 +52,6 @@ TEST_F(NetworkTest, EndToEndRemoteQuery) {
 
     client.Disconnect();
     server.Stop();
-    
-    // Connect one more time to unblock accept() if needed
-    // or just rely on server.Stop() closing the socket.
-    // In our simple server, Stop() closes the fd which causes accept to return error.
     
     server_thread.join();
 }

@@ -9,8 +9,8 @@
 
 namespace minidb {
 
-Server::Server(Catalog& catalog, Pager& pager, uint16_t port)
-    : catalog_(catalog), pager_(pager), port_(port), server_fd_(-1), running_(false) {}
+Server::Server(Catalog& catalog, Pager& pager, LogManager& log_manager, uint16_t port)
+    : catalog_(catalog), pager_(pager), log_manager_(log_manager), port_(port), server_fd_(-1), running_(false) {}
 
 Server::~Server() {
     Stop();
@@ -98,7 +98,7 @@ std::string Server::ProcessQuery(const std::string& query) {
         return "Parser Error: " + parse_status.message() + "\n";
     }
 
-    Executor executor(catalog_, pager_);
+    Executor executor(catalog_, pager_, log_manager_);
     Status exec_status = executor.Execute(*stmt, out);
     if (!exec_status.ok()) {
         out << "Execution Error: " << exec_status.message() << "\n";

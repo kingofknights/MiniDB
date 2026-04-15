@@ -6,18 +6,22 @@
 #include "src/catalog/catalog.h"
 #include "src/execution/executor.h"
 #include "src/parser/parser.h"
+#include "src/storage/log_manager.h"
 
 using namespace minidb;
 
 void RunBenchmark() {
     std::string db_file = "benchmark.db";
     std::filesystem::remove(db_file);
+    std::filesystem::remove("benchmark.log");
 
     Status status = Status::OK();
     auto pager = Pager::Open(db_file, status);
     pager->AllocatePage(); // Catalog
     Catalog catalog;
-    Executor executor(catalog, *pager);
+    LogManager log_manager("benchmark.log");
+    Executor executor(catalog, *pager, log_manager);
+
 
     // 1. Setup Table
     {

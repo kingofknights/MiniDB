@@ -2,6 +2,7 @@
 #include "src/parser/lexer.h"
 #include "src/parser/parser.h"
 #include "src/execution/executor.h"
+#include "src/storage/log_manager.h"
 #include <filesystem>
 
 namespace minidb {
@@ -11,13 +12,16 @@ protected:
     void SetUp() override {
         test_db_ = "integration_test.db";
         std::filesystem::remove(test_db_);
+        std::filesystem::remove("test.log");
     }
 
     void TearDown() override {
         std::filesystem::remove(test_db_);
+        std::filesystem::remove("test.log");
     }
 
     Status ExecuteSQL(const std::string& sql, Catalog& catalog, Pager& pager) {
+        LogManager log_manager("test.log");
         Lexer lexer(sql);
         auto tokens = lexer.Tokenize();
         Parser parser(tokens);
@@ -25,7 +29,7 @@ protected:
         auto stmt = parser.Parse(status);
         if (!status.ok()) return status;
         
-        Executor executor(catalog, pager);
+        Executor executor(catalog, pager, log_manager);
         return executor.Execute(*stmt);
     }
 
@@ -57,8 +61,10 @@ TEST_F(IntegrationTest, E2EFlow) {
     Parser parser(tokens);
     Status s = Status::OK();
     auto stmt = parser.Parse(s);
-    Executor executor(catalog, *pager);
-    executor.Execute(*stmt); // Manually check if you want, but integration test passed if no crash
+    LogManager log_manager("int_test_2.log");
+    Executor executor(catalog, *pager, log_manager);
+    std::stringstream ss;
+    executor.Execute(*stmt, ss); // Manually check if you want, but integration test passed if no crash
 }
 
 } // namespace minidb

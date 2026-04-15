@@ -40,7 +40,8 @@ int main(int argc, char* argv[]) {
         catalog = Catalog::Deserialize(page0.GetData());
     }
 
-    Executor executor(*catalog, *pager);
+    LogManager log_manager("minidb.log");
+    Executor executor(*catalog, *pager, log_manager);
 
     std::cout << "Welcome to MiniDB!" << std::endl;
     std::cout << "Connected to: " << db_file << std::endl;

@@ -61,7 +61,7 @@ Follow the established five-layer separation of concerns:
    - Support for modifying existing records via `UPDATE`.
    - Fundamental relational `JOIN` support (Nested Loop).
    - Multi-table query execution infrastructure.
-9. **Milestone 15: Transactions & WAL (Future):**
+9. **Milestone 15: Transactions & WAL:**
    - Atomicity and Durability via Write-Ahead Logging.
    - Transaction control statements: `BEGIN`, `COMMIT`, `ROLLBACK`.
 10. **Milestone 16: Aggregations (Future):**

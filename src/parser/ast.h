@@ -12,7 +12,8 @@ enum class StatementType {
     SELECT,
     DELETE,
     CREATE_INDEX,
-    UPDATE
+    UPDATE,
+    TRANSACTION
 };
 
 struct Statement {
@@ -84,6 +85,17 @@ struct CreateIndexStatement : public Statement {
     std::string table_name;
     std::string column_name;
     StatementType GetType() const override { return StatementType::CREATE_INDEX; }
+};
+
+enum class TransactionType {
+    BEGIN,
+    COMMIT,
+    ROLLBACK
+};
+
+struct TransactionStatement : public Statement {
+    TransactionType type;
+    StatementType GetType() const override { return StatementType::TRANSACTION; }
 };
 
 } // namespace minidb

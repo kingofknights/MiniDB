@@ -134,7 +134,7 @@ Do not implement unless specifically requested:
 - Support basic cross-table `JOIN` operations.
 - Expand query engine to handle multiple table sources.
 
-### Milestone 15: Transactions & WAL [ON HOLD]
+### Milestone 15: Transactions & WAL
 - Write-Ahead Logging (WAL) for durability.
 - Atomicity via `BEGIN/COMMIT/ROLLBACK`.
 - Simple crash recovery mechanism.

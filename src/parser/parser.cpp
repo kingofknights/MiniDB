@@ -12,6 +12,9 @@ std::unique_ptr<Statement> Parser::Parse(Status& status) {
     else if (Match(TokenType::SELECT)) stmt = ParseSelect(status);
     else if (Match(TokenType::DELETE)) stmt = ParseDelete(status);
     else if (Match(TokenType::UPDATE)) stmt = ParseUpdate(status);
+    else if (Match(TokenType::BEGIN)) return ParseTransaction(TransactionType::BEGIN, status);
+    else if (Match(TokenType::COMMIT)) return ParseTransaction(TransactionType::COMMIT, status);
+    else if (Match(TokenType::ROLLBACK)) return ParseTransaction(TransactionType::ROLLBACK, status);
     else {
         status = Status::IOError("Unexpected token: " + Peek().text);
         return nullptr;
@@ -196,7 +199,6 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
 
         if (!Expect(TokenType::ON, status, "Expected ON in JOIN")) return nullptr;
 
-        // Parse left_table.col = right_table.col
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected left column in JOIN ON");
             return nullptr;
@@ -258,6 +260,13 @@ std::unique_ptr<Statement> Parser::ParseUpdate(Status& status) {
     stmt->new_value = Consume().text;
 
     stmt->where = ParseWhere(status);
+    return stmt;
+}
+
+std::unique_ptr<Statement> Parser::ParseTransaction(TransactionType type, Status& status) {
+    auto stmt = std::make_unique<TransactionStatement>();
+    stmt->type = type;
+    Match(TokenType::SEMICOLON);
     return stmt;
 }
 

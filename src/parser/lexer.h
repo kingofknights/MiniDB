@@ -8,6 +8,7 @@ enum class TokenType {
     // Keywords
     CREATE, TABLE, INSERT, INTO, VALUES, SELECT, FROM, DELETE,
     WHERE, INDEX, ON, UPDATE, SET, JOIN,
+    BEGIN, COMMIT, ROLLBACK,
     INT, TEXT,
     
     // Literals

@@ -45,6 +45,8 @@ Status Executor::Execute(const Statement& stmt, std::ostream& out) {
             return ExecuteDelete(static_cast<const DeleteStatement&>(stmt), out);
         case StatementType::UPDATE:
             return ExecuteUpdate(static_cast<const UpdateStatement&>(stmt), out);
+        case StatementType::TRANSACTION:
+            return ExecuteTransaction(static_cast<const TransactionStatement&>(stmt), out);
         case StatementType::CREATE_INDEX:
             return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt), out);
         default:
@@ -382,4 +384,27 @@ Status Executor::ExecuteCreateIndex(const CreateIndexStatement& stmt, std::ostre
     return Status::OK();
 }
 
+Status Executor::ExecuteTransaction(const TransactionStatement& stmt, std::ostream& out) {
+    switch (stmt.type) {
+        case TransactionType::BEGIN:
+            if (in_transaction_) return Status::IOError("Transaction already in progress");
+            log_manager_.AppendLog(LogRecordType::BEGIN);
+            in_transaction_ = true;
+            out << "Transaction started" << std::endl;
+            break;
+        case TransactionType::COMMIT:
+            if (!in_transaction_) return Status::IOError("No transaction in progress");
+            log_manager_.AppendLog(LogRecordType::COMMIT);
+            in_transaction_ = false;
+            out << "Transaction committed" << std::endl;
+            break;
+        case TransactionType::ROLLBACK:
+            if (!in_transaction_) return Status::IOError("No transaction in progress");
+            log_manager_.AppendLog(LogRecordType::ROLLBACK);
+            in_transaction_ = false;
+            out << "Transaction rolled back" << std::endl;
+            break;
+    }
+    return Status::OK();
+}
 } // namespace minidb

@@ -8,7 +8,7 @@ namespace minidb {
 
 class Server {
 public:
-    Server(Catalog& catalog, Pager& pager, uint16_t port);
+    Server(Catalog& catalog, Pager& pager, LogManager& log_manager, uint16_t port);
     ~Server();
 
     // Start the server and listen for connections (blocking)
@@ -23,6 +23,7 @@ private:
 
     Catalog& catalog_;
     Pager& pager_;
+    LogManager& log_manager_;
     uint16_t port_;
     int server_fd_;
     bool running_;

@@ -98,11 +98,11 @@
 - [x] Implement a basic Nested Loop Join algorithm.
 - [x] Add functional tests for updates and joins.
 
-## Milestone 15: Transactions & WAL [ON HOLD]
-- [ ] Implement a Log Manager for Write-Ahead Logging.
-- [ ] Support `BEGIN`, `COMMIT`, and `ROLLBACK` statements.
-- [ ] Implement ACID atomicity (all or nothing) for multi-statement changes.
-- [ ] Support crash recovery by replaying the log.
+## Milestone 15: Transactions & WAL
+- [ ] Support `BEGIN`, `COMMIT`, and `ROLLBACK` in Parser.
+- [ ] Implement a Log Manager for Write-Ahead Logging (WAL).
+- [ ] Implement Atomicity: ensure multi-statement changes are all-or-nothing.
+- [ ] Support simple crash recovery by replaying the log on startup.
 
 ## Milestone 16: Aggregations & Group By [ON HOLD]
 - [ ] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()`.

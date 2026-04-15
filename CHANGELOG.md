@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-15] - 2026-04-10
+### Added
+- **Transactions**: Supported `BEGIN`, `COMMIT`, and `ROLLBACK` for multi-statement atomic changes.
+- **Write-Ahead Logging (WAL)**: Implemented `LogManager` to persist all database changes to a `*.log` file before applying them.
+- **Transaction Context**: Updated `Executor` to track transaction state and log all DML operations (`INSERT`, `DELETE`, `UPDATE`) to the WAL.
+- **Integration**: Updated REPL, Server, and test suite to utilize the new WAL-backed execution engine.
+- **Persistence**: Ensured all data modification operations are durable across crashes via log flushing.
+
 ## [0.1.0-milestone-14] - 2026-04-10
 ### Added
 - **UPDATE Statement**: Support for modifying existing records via `UPDATE table SET col = val WHERE condition`.

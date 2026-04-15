@@ -2,6 +2,7 @@
 #include "src/parser/lexer.h"
 #include "src/parser/parser.h"
 #include "src/execution/executor.h"
+#include "src/storage/log_manager.h"
 #include <filesystem>
 
 namespace minidb {
@@ -18,6 +19,7 @@ protected:
     }
 
     Status ExecuteSQL(const std::string& sql, Catalog& catalog, Pager& pager) {
+        LogManager log_manager("index_test.log");
         Lexer lexer(sql);
         auto tokens = lexer.Tokenize();
         Parser parser(tokens);
@@ -25,8 +27,9 @@ protected:
         auto stmt = parser.Parse(status);
         if (!status.ok()) return status;
         
-        Executor executor(catalog, pager);
-        return executor.Execute(*stmt);
+        Executor executor(catalog, pager, log_manager);
+        std::stringstream ss;
+        return executor.Execute(*stmt, ss);
     }
 
     std::string test_db_;
