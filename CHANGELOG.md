@@ -12,6 +12,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Wire protocol for string-based queries and results.
   - Remote client support.
 
+## [0.1.0-milestone-16] - 2026-04-10
+### Added
+- **Aggregations**: Supported `COUNT()`, `SUM()`, `AVG()`, `MIN()`, and `MAX()` functions in `SELECT` statements.
+- **Grouping**: Implemented `GROUP BY` clause for categorizing data and calculating aggregates per group.
+- **Analytical Engine**: Refactored `Executor` to handle multi-stage query processing (filtering, then grouping/aggregating).
+- **Parser Support**: Updated SQL grammar to recognize analytical keywords and complex select-list expressions.
+- **Verification**: Verified with 100+ tests including specific analytical and grouping scenarios.
+
 ## [0.1.0-milestone-15] - 2026-04-10
 ### Added
 - **Transactions**: Supported `BEGIN`, `COMMIT`, and `ROLLBACK` for multi-statement atomic changes.

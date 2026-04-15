@@ -9,6 +9,7 @@ enum class TokenType {
     CREATE, TABLE, INSERT, INTO, VALUES, SELECT, FROM, DELETE,
     WHERE, INDEX, ON, UPDATE, SET, JOIN,
     BEGIN, COMMIT, ROLLBACK,
+    COUNT, SUM, AVG, MIN, MAX, GROUP, BY,
     INT, TEXT,
     
     // Literals

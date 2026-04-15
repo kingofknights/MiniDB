@@ -104,10 +104,11 @@
 - [ ] Implement Atomicity: ensure multi-statement changes are all-or-nothing.
 - [ ] Support simple crash recovery by replaying the log on startup.
 
-## Milestone 16: Aggregations & Group By [ON HOLD]
-- [ ] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()`.
-- [ ] Implement `GROUP BY` logic.
-- [ ] Add `HAVING` clause filtering.
+## Milestone 16: Aggregations & Group By
+- [ ] Support `COUNT()`, `SUM()`, `AVG()`, `MIN()`, `MAX()` in Parser.
+- [ ] Support `GROUP BY` syntax and basic grouping logic.
+- [ ] Implement aggregation execution in the query engine.
+- [ ] Add analytical tests for summary queries.
 
 ## Stretch
 - [ ] single-column index

@@ -139,9 +139,10 @@ Do not implement unless specifically requested:
 - Atomicity via `BEGIN/COMMIT/ROLLBACK`.
 - Simple crash recovery mechanism.
 
-### Milestone 16: Aggregations & Group By [ON HOLD]
+### Milestone 16: Aggregations & Group By
 - Aggregate functions: `COUNT`, `SUM`, `AVG`.
 - Grouping logic via `GROUP BY`.
+- Analytical query processing.
 
 ## Deliverable expectations
 For each milestone:

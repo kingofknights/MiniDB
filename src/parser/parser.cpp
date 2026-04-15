@@ -21,9 +21,7 @@ std::unique_ptr<Statement> Parser::Parse(Status& status) {
     }
 
     if (stmt && status.ok()) {
-        // Optional semicolon
         Match(TokenType::SEMICOLON);
-        // Ensure no more tokens
         if (Peek().type != TokenType::END_OF_FILE) {
             status = Status::IOError("Extra tokens after statement: " + Peek().text);
             return nullptr;
@@ -58,20 +56,16 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
-    
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
-    
     bool first = true;
     while (Peek().type != TokenType::RPAREN) {
         if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
         first = false;
-
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected column name");
             return nullptr;
         }
         std::string col_name = Consume().text;
-        
         DataType type;
         if (Match(TokenType::INT)) type = DataType::INT;
         else if (Match(TokenType::TEXT)) type = DataType::TEXT;
@@ -79,15 +73,12 @@ std::unique_ptr<Statement> Parser::ParseCreateTable(Status& status) {
             status = Status::IOError("Expected INT or TEXT");
             return nullptr;
         }
-        
         stmt->columns.emplace_back(col_name, type);
     }
-    
     if (stmt->columns.empty()) {
         status = Status::IOError("Table must have at least one column");
         return nullptr;
     }
-
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
     return stmt;
 }
@@ -100,14 +91,12 @@ std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
         return nullptr;
     }
     stmt->index_name = Consume().text;
-    
     if (!Expect(TokenType::ON, status, "Expected ON")) return nullptr;
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected table name");
         return nullptr;
     }
     stmt->table_name = Consume().text;
-
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected column name");
@@ -115,7 +104,6 @@ std::unique_ptr<Statement> Parser::ParseCreateIndex(Status& status) {
     }
     stmt->column_name = Consume().text;
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
-
     return stmt;
 }
 
@@ -127,29 +115,24 @@ std::unique_ptr<Statement> Parser::ParseInsert(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
-    
     if (!Expect(TokenType::VALUES, status, "Expected VALUES")) return nullptr;
     if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
-    
     bool first = true;
     while (Peek().type != TokenType::RPAREN) {
         if (!first && !Expect(TokenType::COMMA, status, "Expected comma")) return nullptr;
         first = false;
-
         if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
             status = Status::IOError("Expected value");
             return nullptr;
         }
         stmt->raw_values.push_back(Consume().text);
     }
-    
     if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
     return stmt;
 }
 
 std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
     if (!Match(TokenType::WHERE)) return nullptr;
-    
     auto where = std::make_unique<WhereClause>();
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected column name in WHERE");
@@ -157,7 +140,6 @@ std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
     }
     where->column_name = Consume().text;
     for (auto & c: where->column_name) c = std::toupper(c);
-
     if (Match(TokenType::EQUAL)) where->op = OpType::EQUAL;
     else if (Match(TokenType::GREATER)) where->op = OpType::GREATER;
     else if (Match(TokenType::LESS)) where->op = OpType::LESS;
@@ -167,7 +149,6 @@ std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
         status = Status::IOError("Expected operator (=, >, <, >=, <=) in WHERE");
         return nullptr;
     }
-
     if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
         status = Status::IOError("Expected value in WHERE");
         return nullptr;
@@ -178,7 +159,39 @@ std::unique_ptr<WhereClause> Parser::ParseWhere(Status& status) {
 
 std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
     auto stmt = std::make_unique<SelectStatement>();
-    if (!Expect(TokenType::STAR, status, "Expected *")) return nullptr;
+    if (Match(TokenType::STAR)) {
+        // All columns selected
+    } else {
+        bool first = true;
+        while (true) {
+            if (!first && !Expect(TokenType::COMMA, status, "Expected comma between select items")) return nullptr;
+            first = false;
+            AggregateType agg_type;
+            if (Match(TokenType::COUNT)) agg_type = AggregateType::COUNT;
+            else if (Match(TokenType::SUM)) agg_type = AggregateType::SUM;
+            else if (Match(TokenType::AVG)) agg_type = AggregateType::AVG;
+            else if (Match(TokenType::MIN)) agg_type = AggregateType::MIN;
+            else if (Match(TokenType::MAX)) agg_type = AggregateType::MAX;
+            else {
+                status = Status::IOError("Expected aggregate function (COUNT, SUM, etc.) or *");
+                return nullptr;
+            }
+            if (!Expect(TokenType::LPAREN, status, "Expected (")) return nullptr;
+            std::string col;
+            if (Match(TokenType::STAR)) col = "*";
+            else {
+                if (Peek().type != TokenType::IDENTIFIER) {
+                    status = Status::IOError("Expected column name in aggregate");
+                    return nullptr;
+                }
+                col = Consume().text;
+                for (auto & c: col) c = std::toupper(c);
+            }
+            if (!Expect(TokenType::RPAREN, status, "Expected )")) return nullptr;
+            stmt->aggregates.push_back({agg_type, col});
+            if (Peek().type != TokenType::COMMA) break;
+        }
+    }
     if (!Expect(TokenType::FROM, status, "Expected FROM")) return nullptr;
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected table name");
@@ -186,7 +199,6 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
     }
     stmt->table_name = Consume().text;
 
-    // Optional JOIN
     if (Match(TokenType::JOIN)) {
         auto join = std::make_unique<JoinClause>();
         join->left_table = stmt->table_name;
@@ -196,29 +208,34 @@ std::unique_ptr<Statement> Parser::ParseSelect(Status& status) {
         }
         join->right_table = Consume().text;
         join->type = JoinType::INNER;
-
         if (!Expect(TokenType::ON, status, "Expected ON in JOIN")) return nullptr;
-
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected left column in JOIN ON");
             return nullptr;
         }
         join->left_column = Consume().text;
         for (auto & c: join->left_column) c = std::toupper(c);
-
         if (!Expect(TokenType::EQUAL, status, "Expected = in JOIN ON")) return nullptr;
-
         if (Peek().type != TokenType::IDENTIFIER) {
             status = Status::IOError("Expected right column in JOIN ON");
             return nullptr;
         }
         join->right_column = Consume().text;
         for (auto & c: join->right_column) c = std::toupper(c);
-
         stmt->join = std::move(join);
     }
 
     stmt->where = ParseWhere(status);
+
+    if (Match(TokenType::GROUP)) {
+        if (!Expect(TokenType::BY, status, "Expected BY after GROUP")) return nullptr;
+        if (Peek().type != TokenType::IDENTIFIER) {
+            status = Status::IOError("Expected column name in GROUP BY");
+            return nullptr;
+        }
+        stmt->group_by_column = Consume().text;
+        for (auto & c: stmt->group_by_column) c = std::toupper(c);
+    }
     return stmt;
 }
 
@@ -241,24 +258,19 @@ std::unique_ptr<Statement> Parser::ParseUpdate(Status& status) {
         return nullptr;
     }
     stmt->table_name = Consume().text;
-
     if (!Expect(TokenType::SET, status, "Expected SET after table name")) return nullptr;
-
     if (Peek().type != TokenType::IDENTIFIER) {
         status = Status::IOError("Expected column name in SET");
         return nullptr;
     }
     stmt->column_name = Consume().text;
     for (auto & c: stmt->column_name) c = std::toupper(c);
-
     if (!Expect(TokenType::EQUAL, status, "Expected = in SET")) return nullptr;
-
     if (Peek().type != TokenType::INTEGER_LITERAL && Peek().type != TokenType::STRING_LITERAL) {
         status = Status::IOError("Expected new value in SET");
         return nullptr;
     }
     stmt->new_value = Consume().text;
-
     stmt->where = ParseWhere(status);
     return stmt;
 }

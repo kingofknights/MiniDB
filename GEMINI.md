@@ -64,7 +64,7 @@ Follow the established five-layer separation of concerns:
 9. **Milestone 15: Transactions & WAL:**
    - Atomicity and Durability via Write-Ahead Logging.
    - Transaction control statements: `BEGIN`, `COMMIT`, `ROLLBACK`.
-10. **Milestone 16: Aggregations (Future):**
+10. **Milestone 16: Aggregations:**
     - Analytical queries: `COUNT`, `SUM`, `AVG`, `GROUP BY`.
 
 ---

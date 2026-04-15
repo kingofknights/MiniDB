@@ -59,10 +59,25 @@ struct JoinClause {
     JoinType type;
 };
 
+enum class AggregateType {
+    COUNT,
+    SUM,
+    AVG,
+    MIN,
+    MAX
+};
+
+struct AggregateExpr {
+    AggregateType type;
+    std::string column_name; // "*" for COUNT(*)
+};
+
 struct SelectStatement : public Statement {
     std::string table_name;
     std::unique_ptr<WhereClause> where;
     std::unique_ptr<JoinClause> join;
+    std::vector<AggregateExpr> aggregates;
+    std::string group_by_column;
     StatementType GetType() const override { return StatementType::SELECT; }
 };
 

@@ -11,6 +11,8 @@ static const std::unordered_map<std::string, TokenType> KEYWORDS = {
     {"WHERE", TokenType::WHERE}, {"INDEX", TokenType::INDEX}, {"ON", TokenType::ON},
     {"UPDATE", TokenType::UPDATE}, {"SET", TokenType::SET}, {"JOIN", TokenType::JOIN},
     {"BEGIN", TokenType::BEGIN}, {"COMMIT", TokenType::COMMIT}, {"ROLLBACK", TokenType::ROLLBACK},
+    {"COUNT", TokenType::COUNT}, {"SUM", TokenType::SUM}, {"AVG", TokenType::AVG},
+    {"MIN", TokenType::MIN}, {"MAX", TokenType::MAX}, {"GROUP", TokenType::GROUP}, {"BY", TokenType::BY},
     {"INT", TokenType::INT}, {"TEXT", TokenType::TEXT}
 };
 

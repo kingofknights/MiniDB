@@ -3,6 +3,7 @@
 #include "src/storage/btree.h"
 #include <iomanip>
 #include <cstring>
+#include <map>
 
 namespace minidb {
 
@@ -45,8 +46,6 @@ Status Executor::Execute(const Statement& stmt, std::ostream& out) {
             return ExecuteDelete(static_cast<const DeleteStatement&>(stmt), out);
         case StatementType::UPDATE:
             return ExecuteUpdate(static_cast<const UpdateStatement&>(stmt), out);
-        case StatementType::TRANSACTION:
-            return ExecuteTransaction(static_cast<const TransactionStatement&>(stmt), out);
         case StatementType::CREATE_INDEX:
             return ExecuteCreateIndex(static_cast<const CreateIndexStatement&>(stmt), out);
         default:
@@ -100,6 +99,7 @@ Status Executor::ExecuteInsert(const InsertStatement& stmt, std::ostream& out) {
     }
 
     Record rec(std::move(values));
+    log_manager_.AppendLog(LogRecordType::INSERT, stmt.table_name, {}, Record::Serialize(schema, rec));
     Status s = current_table_->InsertRecord(rec);
     if (s.ok()) {
         auto h_indexes = catalog_.GetHashIndexes(stmt.table_name);
@@ -237,6 +237,72 @@ Status Executor::ExecuteSelect(const SelectStatement& stmt, std::ostream& out) {
         }
     }
 
+    if (!stmt.aggregates.empty()) {
+        struct AggState {
+            double sum = 0;
+            int64_t count = 0;
+            double min = 1e18;
+            double max = -1e18;
+        };
+        std::map<std::string, std::vector<AggState>> groups;
+
+        size_t group_by_idx = 0;
+        bool has_group_by = false;
+        if (!stmt.group_by_column.empty()) {
+            has_group_by = true;
+            for (size_t i = 0; i < schema_left.GetColumnCount(); ++i) {
+                if (schema_left.GetColumn(i).GetName() == stmt.group_by_column) {
+                    group_by_idx = i;
+                    break;
+                }
+            }
+        }
+
+        for (const auto& rec : records) {
+            std::string group_key = has_group_by ? (rec.GetValue(group_by_idx).GetType() == DataType::INT ? std::to_string(rec.GetValue(group_by_idx).AsInt()) : rec.GetValue(group_by_idx).AsString()) : "ALL";
+            if (groups.find(group_key) == groups.end()) groups[group_key].resize(stmt.aggregates.size());
+            
+            for (size_t i = 0; i < stmt.aggregates.size(); ++i) {
+                const auto& agg = stmt.aggregates[i];
+                double val = 0;
+                if (agg.column_name != "*") {
+                    for (size_t c = 0; c < schema_left.GetColumnCount(); ++c) {
+                        if (schema_left.GetColumn(c).GetName() == agg.column_name) {
+                            val = (rec.GetValue(c).GetType() == DataType::INT ? rec.GetValue(c).AsInt() : 0);
+                            break;
+                        }
+                    }
+                }
+
+                groups[group_key][i].count++;
+                groups[group_key][i].sum += val;
+                if (val < groups[group_key][i].min) groups[group_key][i].min = val;
+                if (val > groups[group_key][i].max) groups[group_key][i].max = val;
+            }
+        }
+
+        if (has_group_by) out << std::setw(15) << stmt.group_by_column << " | ";
+        for (const auto& agg : stmt.aggregates) out << std::setw(15) << (agg.type == AggregateType::COUNT ? "COUNT" : "AGG") << "(" << agg.column_name << ")" << " | ";
+        out << "\n" << std::string(18 * (stmt.aggregates.size() + (has_group_by?1:0)), '-') << "\n";
+
+        for (auto const& [key, states] : groups) {
+            if (has_group_by) out << std::setw(15) << key << " | ";
+            for (size_t i = 0; i < stmt.aggregates.size(); ++i) {
+                double res = 0;
+                switch (stmt.aggregates[i].type) {
+                    case AggregateType::COUNT: res = states[i].count; break;
+                    case AggregateType::SUM: res = states[i].sum; break;
+                    case AggregateType::AVG: res = states[i].count > 0 ? states[i].sum / states[i].count : 0; break;
+                    case AggregateType::MIN: res = states[i].min; break;
+                    case AggregateType::MAX: res = states[i].max; break;
+                }
+                out << std::setw(15) << res << " | ";
+            }
+            out << "\n";
+        }
+        return Status::OK();
+    }
+
     if (used_index) out << "(Used index lookup)" << std::endl;
     
     for (size_t i = 0; i < schema_left.GetColumnCount(); ++i) {
@@ -279,6 +345,7 @@ Status Executor::ExecuteDelete(const DeleteStatement& stmt, std::ostream& out) {
                 size_t bytes_read = 0;
                 Record rec = Record::Deserialize(schema, page.GetData() + slot->offset, bytes_read);
                 if (Matches(rec, schema, stmt.where.get())) {
+                    log_manager_.AppendLog(LogRecordType::DELETE, stmt.table_name, Record::Serialize(schema, rec), {});
                     slot->deleted = true;
                     page_modified = true;
                     deleted_count++;
@@ -329,6 +396,7 @@ Status Executor::ExecuteUpdate(const UpdateStatement& stmt, std::ostream& out) {
                         }
                     }
                     Record updated_rec(std::move(new_values));
+                    log_manager_.AppendLog(LogRecordType::UPDATE, stmt.table_name, Record::Serialize(schema, rec), Record::Serialize(schema, updated_rec));
                     slot->deleted = true;
                     page_modified = true;
                     table.InsertRecord(updated_rec);
@@ -407,4 +475,5 @@ Status Executor::ExecuteTransaction(const TransactionStatement& stmt, std::ostre
     }
     return Status::OK();
 }
+
 } // namespace minidb
